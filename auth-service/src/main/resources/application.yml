@@ -1,13 +1,14 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/ilogos_authdb
-    username: ilogos
-    password: password
+    url: ${AUTH_ILOGOS_DB_URL}
+    username: ${DB_ILOGOS_USERNAME}
+    password: ${DB_ILOGOS_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+
 jwt:
-  secret: "ctrhtn_ljk;ty_,snm_ljcnfnjxyj_lkbyysv_b_ckj;ysv"
+  secret: ${ILOGOS_JWT_SECRET}
   accessTokenExpiration: 28800000   # 8 hours
   refreshTokenExpiration: 604800000 # 7 days
