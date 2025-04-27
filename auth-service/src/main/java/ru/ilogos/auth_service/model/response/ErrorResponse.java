@@ -1,0 +1,27 @@
+package ru.ilogos.auth_service.model.response;
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public class ErrorResponse extends AbstractResponse {
+    private List<String> errors = null;
+
+    public static ResponseEntity<ErrorResponse> response(HttpStatus status, List<String> errors) {
+        return ResponseEntity.status(status).body(new ErrorResponse(errors));
+    }
+
+    public static ResponseEntity<ErrorResponse> response(HttpStatus status, String error) {
+        return ErrorResponse.response(status, List.of(error));
+    }
+
+    public static ResponseEntity<ErrorResponse> response(HttpStatus status, Exception ex) {
+        return ErrorResponse.response(status, ex.getMessage());
+    }
+}
