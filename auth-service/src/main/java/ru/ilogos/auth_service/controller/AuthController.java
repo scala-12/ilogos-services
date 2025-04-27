@@ -1,12 +1,16 @@
 package ru.ilogos.auth_service.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,6 +25,7 @@ import ru.ilogos.auth_service.exceptions.ExceptionWithStatus;
 import ru.ilogos.auth_service.model.RoleType;
 import ru.ilogos.auth_service.model.response.ErrorResponse;
 import ru.ilogos.auth_service.model.response.SuccessResponse;
+import ru.ilogos.auth_service.service.JwtService;
 import ru.ilogos.auth_service.service.UserService;
 
 @Slf4j
@@ -36,25 +41,68 @@ public class AuthController {
     private record AuthRequest(Optional<String> username, Optional<String> email, String password) {
     }
 
+    private record RefreshAuthRequest(String username, String refreshToken) {
+    }
+
     private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     @PostMapping("/register")
     public ResponseEntity<SuccessResponse<User>> register(@RequestBody RegistrationRequest req) {
         User user = userService.create(
-                req.username(),
-                req.email(),
-                req.password(),
-                req.isActive().orElseGet(() -> true),
-                req.roles(),
-                req.timezone());
+                req.username,
+                req.email,
+                req.password,
+                req.isActive.orElseGet(() -> true),
+                req.roles,
+                req.timezone);
         return SuccessResponse.response(HttpStatus.CREATED, user);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<SuccessResponse<Boolean>> login(@RequestBody AuthRequest req) throws NotFoundException {
-        var user = userService.findUser(req.username(), req.email());
+    private ResponseEntity<SuccessResponse<Map<?, ?>>> getJwtResponse(
+            User user, Optional<String> optionalRefreshToken) {
+        String accessToken = jwtService.generateAccessToken(
+                Map.of("roles", user.getRoles().stream().map(RoleType::name).toList()),
+                user.getUsername());
+        String refreshToken = optionalRefreshToken.orElseGet(() -> jwtService.generateRefreshToken(user.getUsername()));
 
-        return SuccessResponse.response(user.orElseThrow(() -> new NotFoundException()).equalsPassword(req.password()));
+        return SuccessResponse.response(Map.of("accessToken", accessToken, "refreshToken", refreshToken));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<SuccessResponse<Map<?, ?>>> login(@RequestBody AuthRequest req) throws NotFoundException {
+        String username = req.email.orElse(req.username.orElse(null));
+        if (username == null) {
+            log.error("login: Username not provided");
+            throw new RuntimeException("Username not provided");
+        }
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, req.password));
+
+            User user = userService.findUser(username)
+                    .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.NON_AUTHORITATIVE_INFORMATION));
+
+            return getJwtResponse(user, Optional.empty());
+        } catch (AuthenticationException ex) {
+            throw new ExceptionWithStatus(HttpStatus.NON_AUTHORITATIVE_INFORMATION, ex);
+        }
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<SuccessResponse<Map<?, ?>>> refreshToken(@RequestBody RefreshAuthRequest req) {
+        if (jwtService.isTokenValid(req.refreshToken, req.username)) {
+            String username = jwtService.extractUsername(req.refreshToken);
+
+            User user = userService.findUser(username)
+                    .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.NON_AUTHORITATIVE_INFORMATION));
+
+            return getJwtResponse(user, Optional.of(req.refreshToken));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
     @ExceptionHandler(ExceptionWithStatus.class)
