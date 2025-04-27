@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +79,7 @@ public class AuthController {
             throw new RuntimeException("Username not provided");
         }
 
+        log.info("User auth: {}", username);
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, req.password));
@@ -85,8 +87,11 @@ public class AuthController {
             User user = userService.findUser(username)
                     .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.NON_AUTHORITATIVE_INFORMATION));
 
+            log.info("Auth success: {}", username);
+
             return getJwtResponse(user, Optional.empty());
         } catch (AuthenticationException ex) {
+            log.info("Auth error: {}", username);
             throw new ExceptionWithStatus(HttpStatus.NON_AUTHORITATIVE_INFORMATION, ex);
         }
     }
@@ -96,11 +101,17 @@ public class AuthController {
         if (jwtService.isTokenValid(req.refreshToken, req.username)) {
             String username = jwtService.extractUsername(req.refreshToken);
 
+            log.info("Refresh token: {}", username);
+
             User user = userService.findUser(username)
                     .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.NON_AUTHORITATIVE_INFORMATION));
 
+            log.info("Token refresh success: {}", username);
+
             return getJwtResponse(user, Optional.of(req.refreshToken));
         } else {
+            log.info("Token refresh error: {}", req.username);
+
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
@@ -127,6 +138,11 @@ public class AuthController {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception ex) {
         return ErrorResponse.response(HttpStatus.INTERNAL_SERVER_ERROR, ex);
+    }
+
+    @ExceptionHandler(SignatureException.class)
+    public ResponseEntity<ErrorResponse> handleException(SignatureException ex) {
+        return ErrorResponse.response(HttpStatus.BAD_REQUEST, ex);
     }
 
 }
