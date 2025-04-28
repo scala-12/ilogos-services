@@ -28,9 +28,9 @@ public class JwtService {
     private long refreshTokenExpiration;
 
     @Profile("test")
-    public static JwtService create(Key secretKey, long accessTokenExpiration, long refreshTokenExpiration) {
+    public static JwtService create(String secretKey, long accessTokenExpiration, long refreshTokenExpiration) {
         var self = new JwtService(null);
-        self.secretKey = secretKey;
+        self.secretKey = Keys.hmacShaKeyFor(secretKey.getBytes());
         self.accessTokenExpiration = accessTokenExpiration;
         self.refreshTokenExpiration = refreshTokenExpiration;
 

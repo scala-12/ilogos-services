@@ -9,17 +9,13 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import io.jsonwebtoken.security.Keys;
-
 class JwtServiceTest {
 
     private JwtService jwtService;
 
     @BeforeEach
     void setUp() {
-        var secretKey = Keys.hmacShaKeyFor("verysecretkeyverysecretkeyverysecretkey".getBytes());
-
-        jwtService = JwtService.create(secretKey, 28800000, 604800000);
+        jwtService = JwtService.create("verysecretkeyverysecretkeyverysecretkey", 28800000, 604800000);
         jwtService.init();
     }
 
