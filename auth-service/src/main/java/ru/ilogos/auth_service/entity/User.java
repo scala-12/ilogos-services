@@ -109,10 +109,32 @@ public class User {
 
             return this;
         }
+
+        public UserBuilder username(String username) {
+            this.username = username != null ? username.toLowerCase() : null;
+            return this;
+        }
+
+        public UserBuilder email(String email) {
+            this.email = email != null ? email.toLowerCase() : null;
+            return this;
+        }
     }
 
     public boolean equalsPassword(String rawPassword) {
         return passwordEncoder.matches(rawPassword, password);
+    }
+
+    public void hashPassword(String rawPassword) {
+        this.password = passwordEncoder.encode(rawPassword);
+    }
+
+    public void setUsername(String username) {
+        this.username = username != null ? username.toLowerCase() : null;
+    }
+
+    public void setEmail(String email) {
+        this.email = email != null ? email.toLowerCase() : null;
     }
 
 }

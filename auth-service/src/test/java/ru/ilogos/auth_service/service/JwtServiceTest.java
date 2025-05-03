@@ -4,10 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import ru.ilogos.auth_service.entity.User;
+import ru.ilogos.auth_service.model.RoleType;
 
 class JwtServiceTest {
 
@@ -22,7 +23,8 @@ class JwtServiceTest {
     @Test
     void generateAndValidateAccessToken() {
         String username = "testuser";
-        String token = jwtService.generateAccessToken(Map.of(), username);
+        String token = jwtService.generateAccessToken(
+                User.builder().username(username).role(RoleType.ROLE_ADMIN).build());
 
         assertNotNull(token);
         assertEquals(username, jwtService.extractUsername(token));
@@ -32,7 +34,8 @@ class JwtServiceTest {
     @Test
     void tokenShouldExpire() throws InterruptedException {
         String username = "testuser";
-        String token = jwtService.generateAccessToken(Map.of(), username);
+        String token = jwtService.generateAccessToken(
+                User.builder().username(username).role(RoleType.ROLE_ADMIN).build());
 
         assertTrue(jwtService.isTokenValid(token, username));
     }
