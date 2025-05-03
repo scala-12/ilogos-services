@@ -63,10 +63,8 @@ public class AuthController {
 
     private ResponseEntity<SuccessResponse<Map<?, ?>>> getJwtResponse(
             User user, Optional<String> optionalRefreshToken) {
-        String accessToken = jwtService.generateAccessToken(
-                Map.of("roles", user.getRoles().stream().map(RoleType::name).toList()),
-                user.getUsername());
-        String refreshToken = optionalRefreshToken.orElseGet(() -> jwtService.generateRefreshToken(user.getUsername()));
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = optionalRefreshToken.orElseGet(() -> jwtService.generateRefreshToken(user));
 
         return SuccessResponse.response(Map.of("accessToken", accessToken, "refreshToken", refreshToken));
     }
@@ -85,14 +83,14 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(username, req.password));
 
             User user = userService.findUser(username)
-                    .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.NON_AUTHORITATIVE_INFORMATION));
+                    .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED));
 
             log.info("Auth success: {}", username);
 
             return getJwtResponse(user, Optional.empty());
         } catch (AuthenticationException ex) {
             log.info("Auth error: {}", username);
-            throw new ExceptionWithStatus(HttpStatus.NON_AUTHORITATIVE_INFORMATION, ex);
+            throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, ex);
         }
     }
 
@@ -104,7 +102,7 @@ public class AuthController {
             log.info("Refresh token: {}", username);
 
             User user = userService.findUser(username)
-                    .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.NON_AUTHORITATIVE_INFORMATION));
+                    .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED));
 
             log.info("Token refresh success: {}", username);
 
