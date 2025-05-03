@@ -1,5 +1,6 @@
 package ru.ilogos.auth_service.service;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -35,7 +36,16 @@ public class UserService {
                 .timezone(timezone).build();
         user = userRepository.save(user);
 
+        usernameHistoryRepository.findCurrentByUser(user).ifPresent(history -> {
+            history.setEndAt(Instant.now());
+            usernameHistoryRepository.save(history);
+        });
         usernameHistoryRepository.save(new UsernameHistory(user));
+
+        emailHistoryRepository.findCurrentByUser(user).ifPresent(history -> {
+            history.setEndAt(Instant.now());
+            emailHistoryRepository.save(history);
+        });
         emailHistoryRepository.save(new EmailHistory(user));
 
         return user;

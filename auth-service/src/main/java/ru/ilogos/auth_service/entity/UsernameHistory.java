@@ -16,6 +16,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.ilogos.auth_service.validation.annotation.ValidUsername;
 
 @Entity
@@ -38,8 +39,12 @@ public class UsernameHistory {
     private User user;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+    @Column(name = "start_at", nullable = false, updatable = false)
+    private Instant startAt;
+
+    @Setter
+    @Column(name = "end_at")
+    private Instant endAt;
 
     public UsernameHistory(User user) {
         this.user = user;
