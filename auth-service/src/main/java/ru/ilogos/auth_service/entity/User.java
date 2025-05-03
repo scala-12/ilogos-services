@@ -1,6 +1,7 @@
 package ru.ilogos.auth_service.entity;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,6 +21,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -27,6 +29,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.Singular;
@@ -44,6 +47,22 @@ public class User {
 
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    @Transient
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    @Builder.Default
+    private Set<Field> changedFields = new HashSet<>();
+
+    public enum Field {
+        USERNAME,
+        PASSWORD,
+        ATTEMPTS_RESET,
+        ATTEMPTS_INCREMENT,
+        LOGGED_TIME,
+        OTHER
+    }
+
+    @Setter(AccessLevel.NONE)
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -99,10 +118,39 @@ public class User {
     @Column(name = "last_login_at")
     private Instant lastLoginAt;
 
+    @Setter(AccessLevel.NONE)
+    @Column(name = "prev_login_at")
+    private Instant prevLoginAt;
+
     @PrePersist
     public void prePersist() {
         failedAttempts = 0;
         isEmailVerified = false;
+    }
+
+    public void preUpdate() {
+        if (changedFields.isEmpty()) {
+            return;
+        }
+        var time = Instant.now();
+        if (changedFields.contains(Field.ATTEMPTS_INCREMENT)) {
+            failedAttempts += 1;
+        } else if (changedFields.contains(Field.ATTEMPTS_RESET) || changedFields.contains(Field.LOGGED_TIME)) {
+            if (changedFields.contains(Field.LOGGED_TIME)) {
+                prevLoginAt = lastLoginAt;
+                lastLoginAt = time;
+            }
+            failedAttempts = 0;
+        }
+
+        if (changedFields.contains(Field.PASSWORD)
+                || changedFields.contains(Field.USERNAME)
+                || changedFields.contains(Field.OTHER)) {
+            updatedAt = time;
+            if (changedFields.contains(Field.PASSWORD)) {
+                passwordChangedAt = time;
+            }
+        }
     }
 
     public static class UserBuilder {
@@ -127,32 +175,42 @@ public class User {
 
         @SuppressWarnings("unused")
         private UserBuilder updatedAt(Instant v) {
-            return this;
+            throw new UnsupportedOperationException();
         }
 
         @SuppressWarnings("unused")
         private UserBuilder lastLoginAt(Instant v) {
-            return this;
+            throw new UnsupportedOperationException();
+        }
+
+        @SuppressWarnings("unused")
+        private UserBuilder prevLoginAt(Instant v) {
+            throw new UnsupportedOperationException();
         }
 
         @SuppressWarnings("unused")
         private UserBuilder failedAttempts(int v) {
-            return this;
+            throw new UnsupportedOperationException();
         }
 
         @SuppressWarnings("unused")
         private UserBuilder createdAt(Instant v) {
-            return this;
+            throw new UnsupportedOperationException();
         }
 
         @SuppressWarnings("unused")
         private UserBuilder passwordChangedAt(Instant v) {
-            return this;
+            throw new UnsupportedOperationException();
         }
 
         @SuppressWarnings("unused")
         private UserBuilder id(UUID v) {
-            return this;
+            throw new UnsupportedOperationException();
+        }
+
+        @SuppressWarnings("unused")
+        private UserBuilder changedFields(Set<Field> v) {
+            throw new UnsupportedOperationException();
         }
     }
 
@@ -162,6 +220,9 @@ public class User {
 
     public boolean setPassword(String rawPassword) {
         if (!rawPassword.isBlank()) {
+            if (id != null && !equalsPassword(rawPassword)) {
+                changedFields.add(Field.PASSWORD);
+            }
             password = passwordEncoder.encode(rawPassword);
 
             return true;
@@ -173,6 +234,9 @@ public class User {
     public boolean setUsername(String username) {
         var newUsername = username != null ? username.toLowerCase() : "";
         if (!newUsername.isBlank()) {
+            if (id != null && !newUsername.equals(this.username)) {
+                changedFields.add(Field.USERNAME);
+            }
             this.username = newUsername;
 
             return true;
@@ -184,12 +248,31 @@ public class User {
     public boolean setEmail(String email) {
         var newEmail = email.toLowerCase();
         if (!newEmail.isBlank()) {
+            if (id != null && !newEmail.equals(this.email)) {
+                changedFields.add(Field.OTHER);
+            }
             this.email = newEmail;
 
             return true;
         }
 
         return false;
+    }
+
+    public void resetAttempts() {
+        changedFields.add(Field.ATTEMPTS_RESET);
+    }
+
+    public void incrementAttempts() {
+        changedFields.add(Field.ATTEMPTS_INCREMENT);
+    }
+
+    public void setLogged() {
+        changedFields.add(Field.LOGGED_TIME);
+    }
+
+    public boolean usernameChanged() {
+        return changedFields.contains(Field.USERNAME);
     }
 
 }

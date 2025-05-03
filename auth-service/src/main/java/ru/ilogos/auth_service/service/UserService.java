@@ -46,4 +46,22 @@ public class UserService {
     public Optional<User> findUser(String usernameOrEmail) {
         return userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase(usernameOrEmail, usernameOrEmail);
     }
+
+    public User update(User user) {
+        user.preUpdate();
+        user = userRepository.save(user);
+
+        return user;
+    }
+
+    public User updateLastLogin(User user) {
+        user.setLogged();
+        return update(user);
+    }
+
+    public User updateFailedAttempts(User user) {
+        user.incrementAttempts();
+        return update(user);
+    }
+
 }
