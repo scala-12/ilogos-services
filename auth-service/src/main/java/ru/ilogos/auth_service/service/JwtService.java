@@ -15,6 +15,8 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.ilogos.auth_service.config.JwtConfig;
+import ru.ilogos.auth_service.entity.User;
+import ru.ilogos.auth_service.model.RoleType;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -58,24 +60,29 @@ public class JwtService {
                 .getBody();
     }
 
-    public String generateAccessToken(Map<String, Object> extraClaims, String username) {
-        return generateToken(extraClaims, username, accessTokenExpiration);
+    public String generateAccessToken(User user) {
+        return generateToken(
+                Map.of("roles", user.getRoles().stream().map(RoleType::name).toList()),
+                user.getUsername(),
+                accessTokenExpiration);
     }
 
-    public String generateRefreshToken(String username) {
-        return generateToken(Map.of(), username, refreshTokenExpiration);
+    public String generateRefreshToken(User user) {
+        return generateToken(Map.of(), user.getUsername(), refreshTokenExpiration);
     }
 
     private String generateToken(Map<String, Object> extraClaims, String username, long expirationMs) {
         log.debug("Token generation: {}", username);
 
-        return Jwts.builder()
+        var token = Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
+
+        return token;
     }
 
     public boolean isTokenValid(String token, String username) {
