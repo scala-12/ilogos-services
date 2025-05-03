@@ -10,6 +10,7 @@ import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -92,18 +93,22 @@ public class AuthController {
         }
 
         log.info("User auth: {}", username);
+        User user = userService.findUser(username)
+                .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED));
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, req.password));
-
-            User user = userService.findUser(username)
-                    .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED));
+            userService.updateLastLogin(user);
 
             log.info("Auth success: {}", username);
 
             return getJwtResponse(user, Optional.empty());
+        } catch (DisabledException ex) {
+            log.info("Auth error: {} disabled", username);
+            throw new ExceptionWithStatus(HttpStatus.FORBIDDEN, ex);
         } catch (AuthenticationException ex) {
             log.info("Auth error: {}", username);
+            userService.updateFailedAttempts(user);
             throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, ex);
         }
     }
