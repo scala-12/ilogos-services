@@ -2,7 +2,9 @@ package ru.ilogos.auth_service.entity;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -13,6 +15,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.PrePersist;
@@ -24,7 +27,6 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.Singular;
@@ -43,21 +45,20 @@ public class User {
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Id
-    @GeneratedValue
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ValidUsername
     @Column(unique = true, nullable = false)
     private String username;
 
     @NotBlank
-    @Column(unique = true, nullable = false)
     @Email
+    @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(nullable = false)
     @NotBlank
-    @Setter(AccessLevel.NONE)
+    @Column(nullable = false)
     private String password;
 
     @NotEmpty
@@ -71,41 +72,45 @@ public class User {
     @Column(name = "active")
     private boolean isActive;
 
-    @Column(name = "emailVerified")
+    @Column(name = "email_verified")
     private boolean isEmailVerified;
 
+    @Setter(AccessLevel.NONE)
     private int failedAttempts;
 
     @NotBlank
     @ValidTimezone
     private String timezone;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
     @Setter(AccessLevel.NONE)
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Setter(AccessLevel.NONE)
     @Column(name = "updated_at")
     private Instant updatedAt;
 
+    @Setter(AccessLevel.NONE)
     @Column(name = "password_changed_at")
     private Instant passwordChangedAt;
 
+    @Setter(AccessLevel.NONE)
     @Column(name = "last_login_at")
     private Instant lastLoginAt;
 
     @PrePersist
     public void prePersist() {
-        createdAt = Instant.now();
         failedAttempts = 0;
         isEmailVerified = false;
     }
 
     public static class UserBuilder {
-        @Getter
-        private String password;
 
-        public UserBuilder hashPassword(String rawPassword) {
-            this.password = passwordEncoder.encode(rawPassword);
+        public UserBuilder password(String rawPassword) {
+            if (!rawPassword.isBlank()) {
+                password = passwordEncoder.encode(rawPassword);
+            }
 
             return this;
         }
@@ -119,22 +124,72 @@ public class User {
             this.email = email != null ? email.toLowerCase() : null;
             return this;
         }
+
+        @SuppressWarnings("unused")
+        private UserBuilder updatedAt(Instant v) {
+            return this;
+        }
+
+        @SuppressWarnings("unused")
+        private UserBuilder lastLoginAt(Instant v) {
+            return this;
+        }
+
+        @SuppressWarnings("unused")
+        private UserBuilder failedAttempts(int v) {
+            return this;
+        }
+
+        @SuppressWarnings("unused")
+        private UserBuilder createdAt(Instant v) {
+            return this;
+        }
+
+        @SuppressWarnings("unused")
+        private UserBuilder passwordChangedAt(Instant v) {
+            return this;
+        }
+
+        @SuppressWarnings("unused")
+        private UserBuilder id(UUID v) {
+            return this;
+        }
     }
 
     public boolean equalsPassword(String rawPassword) {
         return passwordEncoder.matches(rawPassword, password);
     }
 
-    public void hashPassword(String rawPassword) {
-        this.password = passwordEncoder.encode(rawPassword);
+    public boolean setPassword(String rawPassword) {
+        if (!rawPassword.isBlank()) {
+            password = passwordEncoder.encode(rawPassword);
+
+            return true;
+        }
+
+        return false;
     }
 
-    public void setUsername(String username) {
-        this.username = username != null ? username.toLowerCase() : null;
+    public boolean setUsername(String username) {
+        var newUsername = username != null ? username.toLowerCase() : "";
+        if (!newUsername.isBlank()) {
+            this.username = newUsername;
+
+            return true;
+        }
+
+        return false;
     }
 
-    public void setEmail(String email) {
-        this.email = email != null ? email.toLowerCase() : null;
+    public boolean setEmail(String email) {
+        var newEmail = email.toLowerCase();
+        if (!newEmail.isBlank()) {
+            this.email = newEmail;
+
+            return true;
+        }
+
+        return false;
     }
 
 }
