@@ -18,6 +18,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -40,8 +41,12 @@ public class EmailHistory {
     private User user;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+    @Column(name = "start_at", nullable = false, updatable = false)
+    private Instant startAt;
+
+    @Setter
+    @Column(name = "end_at")
+    private Instant endAt;
 
     public EmailHistory(User user) {
         this.user = user;
