@@ -1,5 +1,6 @@
 package ru.ilogos.auth_service.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -11,14 +12,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.ilogos.auth_service.entity.User;
@@ -28,6 +36,7 @@ import ru.ilogos.auth_service.model.response.ErrorResponse;
 import ru.ilogos.auth_service.model.response.SuccessResponse;
 import ru.ilogos.auth_service.service.JwtService;
 import ru.ilogos.auth_service.service.UserService;
+import ru.ilogos.auth_service.validation.annotation.ValidTimezone;
 
 @Slf4j
 @RestController
@@ -35,8 +44,13 @@ import ru.ilogos.auth_service.service.UserService;
 @AllArgsConstructor
 public class AuthController {
 
-    private record RegistrationRequest(String username, String email, String password, Optional<Boolean> isActive,
-            List<RoleType> roles, String timezone) {
+    private record RegistrationRequest(
+            @Size(min = 3, max = 64) String username,
+            @NotBlank @Email String email,
+            @Size(min = 6, max = 64) String password,
+            Optional<Boolean> isActive,
+            @NotEmpty List<RoleType> roles,
+            @ValidTimezone String timezone) {
     }
 
     private record AuthRequest(Optional<String> username, Optional<String> email, String password) {
@@ -50,7 +64,7 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/register")
-    public ResponseEntity<SuccessResponse<User>> register(@RequestBody RegistrationRequest req) {
+    public ResponseEntity<SuccessResponse<User>> register(@Valid @RequestBody RegistrationRequest req) {
         User user = userService.create(
                 req.username,
                 req.email,
@@ -130,6 +144,15 @@ public class AuthController {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+        String msg = ex.getMostSpecificCause().getMessage();
+        if (msg != null) {
+            if (msg.contains("email")) {
+                return ErrorResponse.response(HttpStatus.BAD_REQUEST, "Email already used");
+            } else if (msg.contains("username")) {
+                return ErrorResponse.response(HttpStatus.BAD_REQUEST, "Username already used");
+            }
+        }
+
         return ErrorResponse.response(HttpStatus.BAD_REQUEST, ex);
     }
 
@@ -138,9 +161,22 @@ public class AuthController {
         return ErrorResponse.response(HttpStatus.INTERNAL_SERVER_ERROR, ex);
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        List<String> errors = new ArrayList<>();
+        ex.getBindingResult().getFieldErrors()
+                .forEach(error -> errors.add("%s: %s".formatted(error.getField(), error.getDefaultMessage())));
+        return ErrorResponse.response(HttpStatus.BAD_REQUEST, errors);
+    }
+
     @ExceptionHandler(SignatureException.class)
     public ResponseEntity<ErrorResponse> handleException(SignatureException ex) {
         return ErrorResponse.response(HttpStatus.BAD_REQUEST, ex);
+    }
+
+    @ExceptionHandler(MalformedJwtException.class)
+    public ResponseEntity<ErrorResponse> handleMalformedJwtException(MalformedJwtException ex) {
+        return ErrorResponse.response(HttpStatus.BAD_REQUEST, "Malformed JWT");
     }
 
 }
