@@ -35,15 +35,15 @@ public class UserService {
         }
         Optional<User> user;
         if (username.isPresent()) {
-            user = userRepository.findByUsername(username.get());
+            user = userRepository.findByUsernameIgnoreCase(username.get());
         } else {
-            user = userRepository.findByEmail(email.get());
+            user = userRepository.findByEmailIgnoreCase(email.get());
         }
 
         return user;
     }
 
     public Optional<User> findUser(String usernameOrEmail) {
-        return userRepository.findByEmailOrUsername(usernameOrEmail, usernameOrEmail);
+        return userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase(usernameOrEmail, usernameOrEmail);
     }
 }
