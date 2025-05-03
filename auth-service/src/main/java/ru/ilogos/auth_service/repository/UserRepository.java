@@ -14,10 +14,16 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @EntityGraph(attributePaths = "usernameHistory")
     Optional<User> findWithUsernameHistoryByUsernameIgnoreCase(String username);
 
+    @EntityGraph(attributePaths = "emailHistory")
+    Optional<User> findWithEmailHistoryByUsernameIgnoreCase(String username);
+
     Optional<User> findByEmailIgnoreCase(String email);
 
     @EntityGraph(attributePaths = "usernameHistory")
     Optional<User> findWithUsernameHistoryByEmailIgnoreCase(String email);
+
+    @EntityGraph(attributePaths = "emailHistory")
+    Optional<User> findWithEmailHistoryByEmailIgnoreCase(String email);
 
     Optional<User> findByEmailIgnoreCaseOrUsernameIgnoreCase(String email, String username);
 }

@@ -64,7 +64,7 @@ public class User {
         ATTEMPTS_RESET,
         ATTEMPTS_INCREMENT,
         LOGGED_TIME,
-        OTHER
+        EMAIL
     }
 
     @Setter(AccessLevel.NONE)
@@ -131,6 +131,11 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<UsernameHistory> usernameHistory = new ArrayList<>();
 
+    @Setter(AccessLevel.NONE)
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<EmailHistory> emailHistory = new ArrayList<>();
+
     @PrePersist
     public void prePersist() {
         failedAttempts = 0;
@@ -154,7 +159,7 @@ public class User {
 
         if (changedFields.contains(Field.PASSWORD)
                 || changedFields.contains(Field.USERNAME)
-                || changedFields.contains(Field.OTHER)) {
+                || changedFields.contains(Field.EMAIL)) {
             updatedAt = time;
             if (changedFields.contains(Field.PASSWORD)) {
                 passwordChangedAt = time;
@@ -199,6 +204,11 @@ public class User {
 
         @SuppressWarnings("unused")
         private UserBuilder usernameHistory(List<UsernameHistory> v) {
+            throw new UnsupportedOperationException();
+        }
+
+        @SuppressWarnings("unused")
+        private UserBuilder emailHistory(List<EmailHistory> v) {
             throw new UnsupportedOperationException();
         }
 
@@ -263,7 +273,7 @@ public class User {
         var newEmail = email.toLowerCase();
         if (!newEmail.isBlank()) {
             if (id != null && !newEmail.equals(this.email)) {
-                changedFields.add(Field.OTHER);
+                changedFields.add(Field.EMAIL);
             }
             this.email = newEmail;
 
@@ -287,6 +297,10 @@ public class User {
 
     public boolean hasChangedUsername() {
         return changedFields.contains(Field.USERNAME);
+    }
+
+    public boolean hasChangedEmail() {
+        return changedFields.contains(Field.EMAIL);
     }
 
 }
