@@ -1,7 +1,9 @@
 package ru.ilogos.auth_service.entity;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -9,16 +11,19 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -127,6 +132,11 @@ public class User {
     @Column(name = "prev_login_at")
     private Instant prevLoginAt;
 
+    @Setter(AccessLevel.NONE)
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<UsernameHistory> usernameHistory = new ArrayList<>();
+
     @PrePersist
     public void prePersist() {
         failedAttempts = 0;
@@ -203,6 +213,11 @@ public class User {
 
         @SuppressWarnings("unused")
         private UserBuilder prevLoginAt(Instant v) {
+            throw new UnsupportedOperationException();
+        }
+
+        @SuppressWarnings("unused")
+        private UserBuilder usernameHistory(List<UsernameHistory> v) {
             throw new UnsupportedOperationException();
         }
 
@@ -287,7 +302,7 @@ public class User {
         lastTokenIssuedAt = info.getIssuedAt().toInstant();
     }
 
-    public boolean usernameChanged() {
+    public boolean hasChangedUsername() {
         return changedFields.contains(Field.USERNAME);
     }
 

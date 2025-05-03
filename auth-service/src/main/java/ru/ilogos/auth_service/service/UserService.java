@@ -5,12 +5,15 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.ilogos.auth_service.entity.User;
+import ru.ilogos.auth_service.entity.UsernameHistory;
 import ru.ilogos.auth_service.model.RoleType;
 import ru.ilogos.auth_service.model.TokenInfo;
 import ru.ilogos.auth_service.repository.UserRepository;
+import ru.ilogos.auth_service.repository.UsernameHistoryRepository;
 
 @Service
 @Slf4j
@@ -18,7 +21,9 @@ import ru.ilogos.auth_service.repository.UserRepository;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UsernameHistoryRepository usernameHistoryRepository;
 
+    @Transactional
     public User create(String username, String email, String password, boolean isActive,
             Collection<RoleType> roles,
             String timezone) {
@@ -26,6 +31,9 @@ public class UserService {
                 .isActive(isActive)
                 .timezone(timezone).build();
         user = userRepository.save(user);
+
+        UsernameHistory history = new UsernameHistory(user);
+        usernameHistoryRepository.save(history);
 
         return user;
     }
@@ -48,9 +56,15 @@ public class UserService {
         return userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase(usernameOrEmail, usernameOrEmail);
     }
 
+    @Transactional
     public User update(User user) {
         user.preUpdate();
         user = userRepository.save(user);
+
+        if (user.hasChangedUsername()) {
+            UsernameHistory history = new UsernameHistory(user);
+            usernameHistoryRepository.save(history);
+        }
 
         return user;
     }
