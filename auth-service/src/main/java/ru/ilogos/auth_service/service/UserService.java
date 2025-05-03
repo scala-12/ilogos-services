@@ -21,7 +21,7 @@ public class UserService {
     public User create(String username, String email, String password, boolean isActive,
             Collection<RoleType> roles,
             String timezone) {
-        User user = User.builder().username(username).email(email).hashPassword(password).roles(roles)
+        User user = User.builder().username(username).email(email).password(password).roles(roles)
                 .isActive(isActive)
                 .timezone(timezone).build();
         user = userRepository.save(user);
