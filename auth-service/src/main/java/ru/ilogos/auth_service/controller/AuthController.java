@@ -18,6 +18,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import ru.ilogos.auth_service.entity.User;
 import ru.ilogos.auth_service.exceptions.ExceptionWithStatus;
 import ru.ilogos.auth_service.model.RoleType;
+import ru.ilogos.auth_service.model.response.AbstractResponse;
 import ru.ilogos.auth_service.model.response.ErrorResponse;
 import ru.ilogos.auth_service.model.response.SuccessResponse;
 import ru.ilogos.auth_service.service.JwtService;
@@ -58,9 +60,6 @@ public class AuthController {
     private record AuthRequest(Optional<String> username, Optional<String> email, String password) {
     }
 
-    private record RefreshAuthRequest(String username, String refreshToken) {
-    }
-
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -83,12 +82,15 @@ public class AuthController {
         return SuccessResponse.response(HttpStatus.CREATED, user);
     }
 
-    private ResponseEntity<SuccessResponse<Map<?, ?>>> getJwtResponse(
-            User user, Optional<String> optionalRefreshToken) {
-        String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = optionalRefreshToken.orElseGet(() -> jwtService.generateRefreshToken(user));
+    private ResponseEntity<SuccessResponse<Map<?, ?>>> getJwtResponse(String[] tokens) {
+        return SuccessResponse.response(Map.of("accessToken", tokens[0], "refreshToken", tokens[1]));
+    }
 
-        return SuccessResponse.response(Map.of("accessToken", accessToken, "refreshToken", refreshToken));
+    private String[] generateTokens(User user, Optional<String> optionalRefreshToken) {
+        String accessToken = jwtService.generateToken(user, true);
+        String refreshToken = optionalRefreshToken.orElseGet(() -> jwtService.generateToken(user, false));
+
+        return new String[] { accessToken, refreshToken };
     }
 
     @PostMapping("/login")
@@ -105,11 +107,13 @@ public class AuthController {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, req.password));
-            userService.updateLastLogin(user);
+
+            var tokens = generateTokens(user, Optional.empty());
+            userService.updateTokenUsing(user, jwtService.getTokenInfo(tokens[0]), true);
 
             log.info("Auth success: {}", username);
 
-            return getJwtResponse(user, Optional.empty());
+            return getJwtResponse(tokens);
         } catch (DisabledException ex) {
             log.info("Auth error: {} disabled", username);
             throw new ExceptionWithStatus(HttpStatus.FORBIDDEN, ex);
@@ -121,21 +125,30 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<SuccessResponse<Map<?, ?>>> refreshToken(@RequestBody RefreshAuthRequest req) {
-        var tokenInfo = jwtService.getTokenInfo(req.refreshToken);
-        if (tokenInfo.isValid(req.username)) {
+    public ResponseEntity<? extends AbstractResponse> refreshToken(@RequestHeader("Authorization") String authHeader) {
+        var refreshToken = authHeader != null && authHeader.startsWith("Bearer ")
+                ? Optional.of(authHeader.substring(7))
+                : Optional.<String>empty();
+        if (refreshToken.isEmpty()) {
+            log.info("Bearer token not setted");
+            return ErrorResponse.response(HttpStatus.UNAUTHORIZED, "Bearer token not setted");
+        }
+        var token = refreshToken.get();
+
+        var tokenInfo = jwtService.getTokenInfo(token);
+        User user = userService.findUser(tokenInfo.getUsername())
+                .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED));
+        if (tokenInfo.isValid(user, false)) {
             String username = tokenInfo.getUsername();
 
-            log.info("Refresh token: {}", username);
-
-            User user = userService.findUser(username)
-                    .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED));
+            var tokens = generateTokens(user, Optional.of(token));
+            userService.updateTokenUsing(user, jwtService.getTokenInfo(tokens[0]), false);
 
             log.info("Token refresh success: {}", username);
 
-            return getJwtResponse(user, Optional.of(req.refreshToken));
+            return getJwtResponse(tokens);
         } else {
-            log.info("Token refresh error: {}", req.username);
+            log.info("Token refresh error: {}", user.getUsername());
 
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

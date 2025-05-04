@@ -53,23 +53,17 @@ public class JwtService {
         return new TokenInfo(token, secretKey);
     }
 
-    public String generateAccessToken(User user) {
-        return generateToken(
-                Map.of("roles", user.getRoles().stream().map(RoleType::name).toList()),
-                user,
-                accessTokenExpiration);
-    }
-
-    public String generateRefreshToken(User user) {
-        return generateToken(Map.of(), user, refreshTokenExpiration);
-    }
-
-    private String generateToken(Map<String, Object> extraClaims, User user, long expirationMs) {
+    public String generateToken(User user, boolean isAccess) {
         log.debug("Token generation: {}, {}", user.getUsername(), user.getId());
 
-        Map<String, Object> claims = new HashMap<>(extraClaims);
+        long expirationMs = isAccess ? accessTokenExpiration : refreshTokenExpiration;
+
+        Map<String, Object> claims = new HashMap<>(isAccess
+                ? Map.of("roles", user.getRoles().stream().map(RoleType::name).toList())
+                : Map.of());
         claims.put("username", user.getUsername());
         claims.put("email", user.getEmail());
+        claims.put("type", isAccess ? "access" : "refresh");
 
         var token = Jwts.builder()
                 .setClaims(claims)

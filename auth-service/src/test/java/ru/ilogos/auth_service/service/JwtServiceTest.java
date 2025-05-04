@@ -22,23 +22,21 @@ class JwtServiceTest {
 
     @Test
     void generateAndValidateAccessToken() {
-        String username = "testuser";
-        String token = jwtService.generateAccessToken(
-                User.builder().username(username).role(RoleType.ROLE_ADMIN).build());
+        var user = User.builder().username("testuser").role(RoleType.ROLE_ADMIN).build();
+        String token = jwtService.generateToken(user, true);
 
         assertNotNull(token);
 
         var tokenInfo = jwtService.getTokenInfo(token);
-        assertEquals(username, tokenInfo.getUsername());
-        assertTrue(tokenInfo.isValid(username));
+        assertEquals(user.getUsername(), tokenInfo.getUsername());
+        assertTrue(tokenInfo.isValid(user));
     }
 
     @Test
     void tokenShouldExpire() throws InterruptedException {
-        String username = "testuser";
-        String token = jwtService.generateAccessToken(
-                User.builder().username(username).role(RoleType.ROLE_ADMIN).build());
+        var user = User.builder().username("testuser").role(RoleType.ROLE_ADMIN).build();
+        String token = jwtService.generateToken(user, true));
 
-        assertTrue(jwtService.getTokenInfo(token).isValid(username));
+        assertTrue(jwtService.getTokenInfo(token).isValid(user));
     }
 }

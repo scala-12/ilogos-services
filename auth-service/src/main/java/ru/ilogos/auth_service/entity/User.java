@@ -34,6 +34,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.Singular;
 import ru.ilogos.auth_service.model.RoleType;
+import ru.ilogos.auth_service.model.TokenInfo;
 import ru.ilogos.auth_service.validation.annotation.ValidTimezone;
 import ru.ilogos.auth_service.validation.annotation.ValidUsername;
 
@@ -81,7 +82,7 @@ public class User {
     private String password;
 
     @NotEmpty
-    @ElementCollection(targetClass = RoleType.class)
+    @ElementCollection(targetClass = RoleType.class, fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     @Singular
     @Column(name = "role")
@@ -111,6 +112,10 @@ public class User {
     private Instant updatedAt;
 
     @Setter(AccessLevel.NONE)
+    @Column(name = "last_token_issued_at", nullable = false)
+    private Instant lastTokenIssuedAt;
+
+    @Setter(AccessLevel.NONE)
     @Column(name = "password_changed_at")
     private Instant passwordChangedAt;
 
@@ -126,6 +131,7 @@ public class User {
     public void prePersist() {
         failedAttempts = 0;
         isEmailVerified = false;
+        lastTokenIssuedAt = Instant.now();
     }
 
     public void preUpdate() {
@@ -175,6 +181,11 @@ public class User {
 
         @SuppressWarnings("unused")
         private UserBuilder updatedAt(Instant v) {
+            throw new UnsupportedOperationException();
+        }
+
+        @SuppressWarnings("unused")
+        private UserBuilder lastTokenIssuedAt(Instant v) {
             throw new UnsupportedOperationException();
         }
 
@@ -267,8 +278,11 @@ public class User {
         changedFields.add(Field.ATTEMPTS_INCREMENT);
     }
 
-    public void setLogged() {
-        changedFields.add(Field.LOGGED_TIME);
+    public void setLastTokenIssuedAt(TokenInfo info, boolean isLogin) {
+        if (isLogin) {
+            changedFields.add(Field.LOGGED_TIME);
+        }
+        lastTokenIssuedAt = info.getIssuedAt().toInstant();
     }
 
     public boolean usernameChanged() {
