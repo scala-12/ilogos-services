@@ -122,8 +122,9 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<SuccessResponse<Map<?, ?>>> refreshToken(@RequestBody RefreshAuthRequest req) {
-        if (jwtService.isTokenValid(req.refreshToken, req.username)) {
-            String username = jwtService.extractUsername(req.refreshToken);
+        var tokenInfo = jwtService.getTokenInfo(req.refreshToken);
+        if (tokenInfo.isValid(req.username)) {
+            String username = tokenInfo.getUsername();
 
             log.info("Refresh token: {}", username);
 

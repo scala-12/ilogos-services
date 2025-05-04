@@ -27,8 +27,10 @@ class JwtServiceTest {
                 User.builder().username(username).role(RoleType.ROLE_ADMIN).build());
 
         assertNotNull(token);
-        assertEquals(username, jwtService.extractUsername(token));
-        assertTrue(jwtService.isTokenValid(token, username));
+
+        var tokenInfo = jwtService.getTokenInfo(token);
+        assertEquals(username, tokenInfo.getUsername());
+        assertTrue(tokenInfo.isValid(username));
     }
 
     @Test
@@ -37,6 +39,6 @@ class JwtServiceTest {
         String token = jwtService.generateAccessToken(
                 User.builder().username(username).role(RoleType.ROLE_ADMIN).build());
 
-        assertTrue(jwtService.isTokenValid(token, username));
+        assertTrue(jwtService.getTokenInfo(token).isValid(username));
     }
 }
