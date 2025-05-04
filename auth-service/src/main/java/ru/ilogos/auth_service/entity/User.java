@@ -180,12 +180,19 @@ public class User {
         }
 
         @SuppressWarnings("unused")
-        private UserBuilder updatedAt(Instant v) {
-            throw new UnsupportedOperationException();
+        private UserBuilder id(UUID id) {
+            this.id = id;
+            return this;
         }
 
         @SuppressWarnings("unused")
-        private UserBuilder lastTokenIssuedAt(Instant v) {
+        private UserBuilder lastTokenIssuedAt(Instant lastTokenIssuedAt) {
+            this.lastTokenIssuedAt = lastTokenIssuedAt;
+            return this;
+        }
+
+        @SuppressWarnings("unused")
+        private UserBuilder updatedAt(Instant v) {
             throw new UnsupportedOperationException();
         }
 
@@ -211,11 +218,6 @@ public class User {
 
         @SuppressWarnings("unused")
         private UserBuilder passwordChangedAt(Instant v) {
-            throw new UnsupportedOperationException();
-        }
-
-        @SuppressWarnings("unused")
-        private UserBuilder id(UUID v) {
             throw new UnsupportedOperationException();
         }
 
