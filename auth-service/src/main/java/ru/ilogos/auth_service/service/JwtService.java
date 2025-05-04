@@ -2,12 +2,12 @@ package ru.ilogos.auth_service.service;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import ru.ilogos.auth_service.config.JwtConfig;
 import ru.ilogos.auth_service.entity.User;
 import ru.ilogos.auth_service.model.RoleType;
+import ru.ilogos.auth_service.model.TokenInfo;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -48,35 +49,31 @@ public class JwtService {
         }
     }
 
-    public String extractUsername(String token) {
-        return getAllClaims(token).getSubject();
-    }
-
-    private Claims getAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+    public TokenInfo getTokenInfo(String token) {
+        return new TokenInfo(token, secretKey);
     }
 
     public String generateAccessToken(User user) {
         return generateToken(
                 Map.of("roles", user.getRoles().stream().map(RoleType::name).toList()),
-                user.getUsername(),
+                user,
                 accessTokenExpiration);
     }
 
     public String generateRefreshToken(User user) {
-        return generateToken(Map.of(), user.getUsername(), refreshTokenExpiration);
+        return generateToken(Map.of(), user, refreshTokenExpiration);
     }
 
-    private String generateToken(Map<String, Object> extraClaims, String username, long expirationMs) {
-        log.debug("Token generation: {}", username);
+    private String generateToken(Map<String, Object> extraClaims, User user, long expirationMs) {
+        log.debug("Token generation: {}, {}", user.getUsername(), user.getId());
+
+        Map<String, Object> claims = new HashMap<>(extraClaims);
+        claims.put("username", user.getUsername());
+        claims.put("email", user.getEmail());
 
         var token = Jwts.builder()
-                .setClaims(extraClaims)
-                .setSubject(username)
+                .setClaims(claims)
+                .setSubject(user.getId().toString())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(secretKey, SignatureAlgorithm.HS256)
@@ -85,18 +82,4 @@ public class JwtService {
         return token;
     }
 
-    public boolean isTokenValid(String token, String username) {
-        log.debug("Check token: {}", username);
-
-        final String extractedUsername = extractUsername(token);
-        return (extractedUsername.equals(username)) && !isTokenExpired(token);
-    }
-
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    private Date extractExpiration(String token) {
-        return getAllClaims(token).getExpiration();
-    }
 }
