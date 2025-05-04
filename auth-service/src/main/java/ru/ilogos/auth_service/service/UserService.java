@@ -13,6 +13,7 @@ import ru.ilogos.auth_service.entity.EmailHistory;
 import ru.ilogos.auth_service.entity.User;
 import ru.ilogos.auth_service.entity.UsernameHistory;
 import ru.ilogos.auth_service.model.RoleType;
+import ru.ilogos.auth_service.model.TokenInfo;
 import ru.ilogos.auth_service.repository.EmailHistoryRepository;
 import ru.ilogos.auth_service.repository.UserRepository;
 import ru.ilogos.auth_service.repository.UsernameHistoryRepository;
@@ -84,8 +85,8 @@ public class UserService {
         return user;
     }
 
-    public User updateLastLogin(User user) {
-        user.setLogged();
+    public User updateTokenUsing(User user, TokenInfo info, boolean isLogin) {
+        user.setLastTokenIssuedAt(info, isLogin);
         return update(user);
     }
 
