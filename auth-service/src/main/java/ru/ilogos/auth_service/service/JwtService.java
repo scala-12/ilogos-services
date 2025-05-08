@@ -4,8 +4,10 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Jwts;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.ilogos.auth_service.config.JwtConfig;
 import ru.ilogos.auth_service.entity.User;
+import ru.ilogos.auth_service.exceptions.ExceptionWithStatus;
 import ru.ilogos.auth_service.model.RoleType;
 import ru.ilogos.auth_service.model.TokenInfo;
 
@@ -51,6 +54,17 @@ public class JwtService {
 
     public TokenInfo getTokenInfo(String token) {
         return new TokenInfo(token, secretKey);
+    }
+
+    public TokenInfo extractTokenInfoFromHeader(String header) {
+        var token = header.startsWith("Bearer ")
+                ? Optional.of(header.substring(7))
+                : Optional.<String>empty();
+        if (token.isEmpty()) {
+            log.info("Bearer token not setted");
+            throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, "Bearer token not setted");
+        }
+        return new TokenInfo(token.get(), secretKey);
     }
 
     public String generateToken(User user, boolean isAccess) {

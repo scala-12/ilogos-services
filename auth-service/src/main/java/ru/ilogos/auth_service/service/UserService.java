@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ru.ilogos.auth_service.controller.UserController.UpdateUserRequest;
 import ru.ilogos.auth_service.entity.EmailHistory;
 import ru.ilogos.auth_service.entity.User;
 import ru.ilogos.auth_service.entity.UsernameHistory;
@@ -129,6 +130,18 @@ public class UserService {
     public User updateFailedAttempts(User user) {
         user.incrementAttempts();
         return update(user);
+    }
+
+    public Optional<User> updateByAuth(String authToken, UpdateUserRequest request) {
+        var tokenInfo = jwtService.extractTokenInfoFromHeader(authToken);
+        Optional<User> user = userRepository.findById(tokenInfo.getId());
+        return user.map(e -> {
+            request.email().ifPresent(e::setEmail);
+            request.password().ifPresent(e::setPassword);
+            request.username().ifPresent(e::setUsername);
+
+            return update(e);
+        });
     }
 
 }
