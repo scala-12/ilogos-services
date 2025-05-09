@@ -83,7 +83,7 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(username, req.password));
 
             User user = userService.findUser(username)
-                    .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED));
+                    .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, "Unable to log in with the provided data"));
 
             log.info("Auth success: {}", username);
 
