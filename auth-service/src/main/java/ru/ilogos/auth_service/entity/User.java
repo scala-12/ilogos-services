@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,6 +41,7 @@ import lombok.Setter;
 import lombok.Singular;
 import ru.ilogos.auth_service.model.RoleType;
 import ru.ilogos.auth_service.model.TokenInfo;
+import ru.ilogos.auth_service.model.common.UserView;
 import ru.ilogos.auth_service.validation.annotation.ValidTimezone;
 import ru.ilogos.auth_service.validation.annotation.ValidUsername;
 
@@ -49,7 +51,7 @@ import ru.ilogos.auth_service.validation.annotation.ValidUsername;
 @NoArgsConstructor
 @Builder
 @Table(name = "app_user")
-public class User {
+public class User implements UserView {
 
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -318,6 +320,10 @@ public class User {
 
     public boolean hasChangedEmail() {
         return changedFields.contains(Field.EMAIL);
+    }
+
+    public Set<String> getRolesNames() {
+        return roles.stream().map(RoleType::name).collect(Collectors.toSet());
     }
 
 }
