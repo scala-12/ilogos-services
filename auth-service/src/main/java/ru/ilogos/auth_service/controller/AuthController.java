@@ -10,10 +10,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,11 +28,9 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.ilogos.auth_service.entity.User;
 import ru.ilogos.auth_service.exceptions.ExceptionWithStatus;
 import ru.ilogos.auth_service.model.RoleType;
 import ru.ilogos.auth_service.model.dto.UserDTO;
-import ru.ilogos.auth_service.model.response.AbstractResponse;
 import ru.ilogos.auth_service.model.response.ErrorResponse;
 import ru.ilogos.auth_service.model.response.SuccessResponse;
 import ru.ilogos.auth_service.service.JwtService;
@@ -62,7 +56,6 @@ public class AuthController {
     }
 
     private final UserService userService;
-    private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
     @PostMapping("/register")
@@ -73,7 +66,7 @@ public class AuthController {
         if (roles.size() == 0 && req.roles.contains(RoleType.ROLE_ADMIN)) {
             throw new ExceptionWithStatus(HttpStatus.BAD_REQUEST, "Administrator registration is denied");
         }
-        User user = userService.create(
+        var user = userService.create(
                 req.username,
                 req.email,
                 req.password,
@@ -83,76 +76,29 @@ public class AuthController {
         return SuccessResponse.response(HttpStatus.CREATED, UserDTO.from(user));
     }
 
-    private ResponseEntity<SuccessResponse<Map<?, ?>>> getJwtResponse(String[] tokens) {
+    private static ResponseEntity<SuccessResponse<Map<?, ?>>> getJwtResponse(String[] tokens) {
         return SuccessResponse.response(Map.of("accessToken", tokens[0], "refreshToken", tokens[1]));
-    }
-
-    private String[] generateTokens(User user, Optional<String> optionalRefreshToken) {
-        String accessToken = jwtService.generateToken(user, true);
-        String refreshToken = optionalRefreshToken.orElseGet(() -> jwtService.generateToken(user, false));
-
-        return new String[] { accessToken, refreshToken };
     }
 
     @PostMapping("/login")
     public ResponseEntity<SuccessResponse<Map<?, ?>>> login(@RequestBody AuthRequest req) throws NotFoundException {
-        String username = req.email.orElse(req.username.orElse(null));
-        if (username == null) {
+        if (req.email.isEmpty() && req.username.isEmpty()) {
             log.error("login: Username not provided");
             throw new RuntimeException("Username not provided");
         }
 
-        log.info("User auth: {}", username);
-        User user = userService.findUser(username)
+        String username = req.email.orElse(req.username.get());
+
+        return userService.authenticate(username, req.password).map(AuthController::getJwtResponse)
                 .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, "Unable to log in with the provided data"));
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, req.password));
-
-            var tokens = generateTokens(user, Optional.empty());
-            userService.updateTokenUsing(user, jwtService.getTokenInfo(tokens[0]), true);
-
-            log.info("Auth success: {}", username);
-
-            return getJwtResponse(tokens);
-        } catch (DisabledException ex) {
-            log.info("Auth error: {} disabled", username);
-            throw new ExceptionWithStatus(HttpStatus.FORBIDDEN, ex);
-        } catch (AuthenticationException ex) {
-            log.info("Auth error: {}", username);
-            userService.updateFailedAttempts(user);
-            throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, ex);
-        }
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<? extends AbstractResponse> refreshToken(@RequestHeader("Authorization") String authHeader) {
-        var refreshToken = authHeader != null && authHeader.startsWith("Bearer ")
-                ? Optional.of(authHeader.substring(7))
-                : Optional.<String>empty();
-        if (refreshToken.isEmpty()) {
-            log.info("Bearer token not setted");
-            return ErrorResponse.response(HttpStatus.UNAUTHORIZED, "Bearer token not setted");
-        }
-        var token = refreshToken.get();
-
-        var tokenInfo = jwtService.getTokenInfo(token);
-        User user = userService.findUser(tokenInfo.getUsername())
-                .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED));
-        if (tokenInfo.isValid(user, false)) {
-            String username = tokenInfo.getUsername();
-
-            var tokens = generateTokens(user, Optional.of(token));
-            userService.updateTokenUsing(user, jwtService.getTokenInfo(tokens[0]), false);
-
-            log.info("Token refresh success: {}", username);
-
-            return getJwtResponse(tokens);
-        } else {
-            log.info("Token refresh error: {}", user.getUsername());
-
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    public ResponseEntity<SuccessResponse<Map<?, ?>>> refreshToken(@RequestHeader("Authorization") String authHeader) {
+        var tokenInfo = jwtService.extractTokenInfoFromHeader(authHeader);
+        var tokens = userService.refreshUserToken(tokenInfo);
+        return tokens.map(AuthController::getJwtResponse)
+                .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, "JWT refresh failed"));
     }
 
     @ExceptionHandler(ExceptionWithStatus.class)

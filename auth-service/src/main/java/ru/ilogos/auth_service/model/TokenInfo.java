@@ -13,6 +13,7 @@ import ru.ilogos.auth_service.model.common.UserView;
 @Getter
 public class TokenInfo implements UserMinimalView {
     private final Claims claims;
+    private final String token;
 
     public enum Type {
         ACCESS,
@@ -21,6 +22,7 @@ public class TokenInfo implements UserMinimalView {
     }
 
     public TokenInfo(String token, Key secretKey) {
+        this.token = token;
         this.claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
