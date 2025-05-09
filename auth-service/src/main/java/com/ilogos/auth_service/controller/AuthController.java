@@ -81,9 +81,9 @@ public class AuthController {
             throw new RuntimeException("Username not provided");
         }
 
-        String username = (req.email == null
+        String username = req.email == null
                 ? req.username
-                : req.email).toLowerCase();
+                : req.email;
 
         var tokens = userService.authenticate(username, req.password)
                 .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED,
