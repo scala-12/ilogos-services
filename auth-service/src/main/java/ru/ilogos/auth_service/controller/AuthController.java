@@ -69,6 +69,9 @@ public class AuthController {
         var roles = req.roles.stream()
                 .filter(e -> !e.equals(RoleType.ROLE_ADMIN))
                 .collect(Collectors.toSet());
+        if (roles.size() == 0 && req.roles.contains(RoleType.ROLE_ADMIN)) {
+            throw new ExceptionWithStatus(HttpStatus.BAD_REQUEST, "Administrator registration is denied");
+        }
         User user = userService.create(
                 req.username,
                 req.email,
