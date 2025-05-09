@@ -10,25 +10,25 @@ import com.ilogos.auth_service.entity.User;
 import com.ilogos.auth_service.model.projection.UserProjection;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
-    Optional<UserProjection> findUserByUsernameIgnoreCase(String username);
+    Optional<UserProjection> findUserByUsername(String username);
 
     @EntityGraph(attributePaths = "usernameHistory")
-    Optional<User> findWithUsernameHistoryByUsernameIgnoreCase(String username);
+    Optional<User> findWithUsernameHistoryByUsername(String username);
 
     @EntityGraph(attributePaths = "emailHistory")
-    Optional<User> findWithEmailHistoryByUsernameIgnoreCase(String username);
+    Optional<User> findWithEmailHistoryByUsername(String username);
 
-    Optional<UserProjection> findUserByEmailIgnoreCase(String email);
+    Optional<UserProjection> findUserByEmail(String email);
 
     @EntityGraph(attributePaths = "usernameHistory")
-    Optional<User> findWithUsernameHistoryByEmailIgnoreCase(String email);
+    Optional<User> findWithUsernameHistoryByEmail(String email);
 
     @EntityGraph(attributePaths = "emailHistory")
-    Optional<User> findWithEmailHistoryByEmailIgnoreCase(String email);
+    Optional<User> findWithEmailHistoryByEmail(String email);
 
-    Optional<User> findByEmailIgnoreCaseOrUsernameIgnoreCase(String email, String username);
+    Optional<User> findByEmailOrUsername(String email, String username);
 
-    Optional<UserProjection> findUserByEmailIgnoreCaseOrUsernameIgnoreCase(String email, String username);
+    Optional<UserProjection> findUserByEmailOrUsername(String email, String username);
 
     Optional<UserProjection> findUserById(UUID id);
 }

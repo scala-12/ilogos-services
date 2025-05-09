@@ -33,7 +33,7 @@ public class EmailHistory {
 
     @NotBlank
     @Email
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "citext")
     private String email;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
