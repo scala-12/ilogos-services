@@ -9,9 +9,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.ilogos.auth_service.model.CitextType;
 import com.ilogos.auth_service.model.RoleType;
 import com.ilogos.auth_service.model.TokenInfo;
 import com.ilogos.auth_service.model.common.UserView;
@@ -76,10 +78,12 @@ public class User implements UserView {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Type(value = CitextType.class)
     @ValidUsername
     @Column(unique = true, columnDefinition = "citext", nullable = false)
     private String username;
 
+    @Type(value = CitextType.class)
     @NotBlank
     @Email
     @Column(unique = true, columnDefinition = "citext", nullable = false)
