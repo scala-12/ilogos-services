@@ -187,6 +187,16 @@ public class User implements UserView {
             return this;
         }
 
+        public UserBuilder username(String username) {
+            this.username = username != null ? username.toLowerCase() : null;
+            return this;
+        }
+
+        public UserBuilder email(String email) {
+            this.email = email != null ? email.toLowerCase() : null;
+            return this;
+        }
+
         @SuppressWarnings("unused")
         private UserBuilder id(UUID id) {
             this.id = id;
@@ -263,11 +273,12 @@ public class User implements UserView {
     }
 
     public boolean setUsername(String username) {
-        if (username != null && !username.isBlank()) {
-            if (id != null && !username.equals(this.username)) {
+        var newUsername = username != null ? username.toLowerCase() : "";
+        if (!newUsername.isBlank()) {
+            if (id != null && !newUsername.equals(this.username)) {
                 changedFields.add(Field.USERNAME);
             }
-            this.username = username;
+            this.username = newUsername;
 
             return true;
         }
@@ -276,11 +287,12 @@ public class User implements UserView {
     }
 
     public boolean setEmail(String email) {
-        if (email != null && !email.isBlank()) {
-            if (id != null && !email.equals(this.email)) {
+        var newEmail = email.toLowerCase();
+        if (!newEmail.isBlank()) {
+            if (id != null && !newEmail.equals(this.email)) {
                 changedFields.add(Field.EMAIL);
             }
-            this.email = email;
+            this.email = newEmail;
 
             return true;
         }
