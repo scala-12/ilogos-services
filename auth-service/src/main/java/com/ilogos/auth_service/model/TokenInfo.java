@@ -16,7 +16,7 @@ public class TokenInfo implements UserMinimalView {
     private final Claims claims;
     private final String token;
 
-    public enum Type {
+    private enum Type {
         ACCESS,
         REFRESH,
         UNDEFINED
@@ -59,6 +59,10 @@ public class TokenInfo implements UserMinimalView {
 
     public boolean isAccess() {
         return Type.ACCESS.equals(getType());
+    }
+
+    public boolean isRefresh() {
+        return Type.REFRESH.equals(getType());
     }
 
     public Date getIssuedAt() {

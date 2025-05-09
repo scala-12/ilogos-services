@@ -38,6 +38,9 @@ public class UserService {
     private final EmailHistoryRepository emailHistoryRepository;
     private final AuthenticationManager authenticationManager;
 
+    public record TokensData(String accessToken, String refreshToken) {
+    }
+
     @Transactional
     public User create(String username, String email, String password, boolean isActive,
             Collection<RoleType> roles,
@@ -62,7 +65,7 @@ public class UserService {
         return user;
     }
 
-    public Optional<String[]> authenticate(String usernameOrEmail, String password) {
+    public Optional<TokensData> authenticate(String usernameOrEmail, String password) {
         log.info("User auth: {}", usernameOrEmail);
         return userRepository.findByEmailOrUsername(usernameOrEmail, usernameOrEmail).map(user -> {
             try {
@@ -70,7 +73,7 @@ public class UserService {
                         new UsernamePasswordAuthenticationToken(usernameOrEmail, password));
 
                 var tokens = generateTokens(user, Optional.empty());
-                user.setLastTokenIssuedAt(jwtService.getTokenInfo(tokens[0]), true);
+                user.setLastTokenIssuedAt(jwtService.getTokenInfo(tokens.accessToken), true);
 
                 log.info("Auth success: {}", usernameOrEmail);
 
@@ -86,21 +89,21 @@ public class UserService {
         });
     }
 
-    private String[] generateTokens(User user, Optional<String> optionalRefreshToken) {
+    private TokensData generateTokens(User user, Optional<String> optionalRefreshToken) {
         String accessToken = jwtService.generateToken(user, true);
         String refreshToken = optionalRefreshToken.orElseGet(() -> jwtService.generateToken(user, false));
 
-        return new String[] { accessToken, refreshToken };
+        return new TokensData(accessToken, refreshToken);
     }
 
-    public Optional<String[]> refreshUserToken(TokenInfo tokenInfo) {
+    public Optional<TokensData> refreshUserToken(TokenInfo tokenInfo) {
         User user = userRepository.findById(tokenInfo.getId())
                 .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED));
-        if (tokenInfo.isValid(user, false)) {
+        if (tokenInfo.isRefresh() && tokenInfo.isValid(user, false)) {
             String username = tokenInfo.getUsername();
 
-            String[] tokens = generateTokens(user, Optional.of(tokenInfo.getToken()));
-            user.setLastTokenIssuedAt(jwtService.getTokenInfo(tokens[0]), false);
+            var tokens = generateTokens(user, Optional.of(tokenInfo.getToken()));
+            user.setLastTokenIssuedAt(jwtService.getTokenInfo(tokens.accessToken), false);
 
             log.info("Token refresh success: {}", username);
 
