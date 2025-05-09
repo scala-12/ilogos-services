@@ -15,11 +15,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public class UserDTO implements UserView {
 
-    private UUID id;
-    private String username;
-    private String email;
-    private Set<String> roles;
-    private Instant lastTokenIssuedAt;
+    private final UUID id;
+    private final String username;
+    private final String email;
+    private final Set<String> roles;
+    private final Instant lastTokenIssuedAt;
 
     private static UserDTO from(UserView view, Set<String> roles) {
         return new UserDTO(
