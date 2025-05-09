@@ -18,7 +18,7 @@ public class ErrorResponse extends AbstractResponse {
     }
 
     public static ResponseEntity<ErrorResponse> response(HttpStatus status, String error) {
-        return ErrorResponse.response(status, List.of(error));
+        return ErrorResponse.response(status, error != null ? List.of(error) : List.of());
     }
 
     public static ResponseEntity<ErrorResponse> response(HttpStatus status, Exception ex) {
