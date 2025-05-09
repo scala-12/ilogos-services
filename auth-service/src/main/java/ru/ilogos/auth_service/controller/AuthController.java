@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
@@ -59,12 +60,15 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<SuccessResponse<UserDTO>> register(@Valid @RequestBody RegistrationRequest req) {
+        var roles = req.roles.stream()
+                .filter(e -> !e.equals(RoleType.ROLE_ADMIN))
+                .collect(Collectors.toSet());
         var user = userService.create(
                 req.username,
                 req.email,
                 req.password,
                 req.isActive.orElseGet(() -> true),
-                req.roles,
+                roles,
                 req.timezone);
         return SuccessResponse.response(HttpStatus.CREATED, UserDTO.from(user));
     }
