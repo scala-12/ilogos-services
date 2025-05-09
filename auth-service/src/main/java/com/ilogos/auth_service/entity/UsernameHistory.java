@@ -32,7 +32,7 @@ public class UsernameHistory {
     private Long id;
 
     @ValidUsername
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "citext")
     private String username;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

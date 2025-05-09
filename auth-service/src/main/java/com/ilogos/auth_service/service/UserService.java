@@ -64,7 +64,7 @@ public class UserService {
 
     public Optional<String[]> authenticate(String usernameOrEmail, String password) {
         log.info("User auth: {}", usernameOrEmail);
-        return userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase(usernameOrEmail, usernameOrEmail).map(user -> {
+        return userRepository.findByEmailOrUsername(usernameOrEmail, usernameOrEmail).map(user -> {
             try {
                 authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(usernameOrEmail, password));
