@@ -3,6 +3,9 @@ package com.ilogos.auth_service.entity;
 import java.time.Instant;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
+
+import com.ilogos.auth_service.model.CitextType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,6 +36,7 @@ public class EmailHistory {
 
     @NotBlank
     @Email
+    @Type(value = CitextType.class)
     @Column(nullable = false, columnDefinition = "citext")
     private String email;
 

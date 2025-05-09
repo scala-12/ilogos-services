@@ -3,7 +3,9 @@ package com.ilogos.auth_service.entity;
 import java.time.Instant;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
 
+import com.ilogos.auth_service.model.CitextType;
 import com.ilogos.auth_service.validation.annotation.ValidUsername;
 
 import jakarta.persistence.Column;
@@ -32,6 +34,7 @@ public class UsernameHistory {
     private Long id;
 
     @ValidUsername
+    @Type(value = CitextType.class)
     @Column(nullable = false, columnDefinition = "citext")
     private String username;
 
