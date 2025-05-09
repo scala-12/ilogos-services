@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: ${AUTH_ILOGOS_DB_URL}
+    username: ${DB_ILOGOS_USERNAME}
+    password: ${DB_ILOGOS_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+server:
+  port: 8090
+jwt:
+  secret: ${ILOGOS_JWT_SECRET}
+  accessTokenExpiration: 900000   # 15 minutes
+  refreshTokenExpiration: 604800000 # 7 days
