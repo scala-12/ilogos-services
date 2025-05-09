@@ -2,24 +2,22 @@ package ru.ilogos.auth_service.model;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.UUID;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.Getter;
-import ru.ilogos.auth_service.entity.User;
+import ru.ilogos.auth_service.model.common.UserMinimalView;
+import ru.ilogos.auth_service.model.common.UserView;
 
-public class TokenInfo {
-    @Getter
-    private Claims claims;
+@Getter
+public class TokenInfo implements UserMinimalView {
+    private final Claims claims;
 
     public enum Type {
         ACCESS,
         REFRESH,
         UNDEFINED
-    }
-
-    public TokenInfo(Claims claims) {
-        this.claims = claims;
     }
 
     public TokenInfo(String token, Key secretKey) {
@@ -30,20 +28,16 @@ public class TokenInfo {
                 .getBody();
     }
 
-    public String getUsername() {
-        return claims.get("username", String.class);
-    }
-
     public boolean isExpired() {
         return claims.getExpiration().before(new Date());
     }
 
-    public boolean isValid(User user, boolean checkIat) {
+    public boolean isValid(UserView user, boolean checkIat) {
         return user != null && user.getUsername().equals(getUsername()) && !isExpired()
                 && (!checkIat || !getIssuedAt().toInstant().isBefore(user.getLastTokenIssuedAt()));
     }
 
-    public boolean isValid(User user) {
+    public boolean isValid(UserView user) {
         return isValid(user, true);
     }
 
@@ -68,7 +62,18 @@ public class TokenInfo {
         return claims.getIssuedAt();
     }
 
-    public static String getUsername(String token, Key secretKey) {
-        return new TokenInfo(token, secretKey).getUsername();
+    @Override
+    public String getEmail() {
+        return claims.get("email", String.class);
+    }
+
+    @Override
+    public UUID getId() {
+        return UUID.fromString(claims.getSubject());
+    }
+
+    @Override
+    public String getUsername() {
+        return claims.get("username", String.class);
     }
 }

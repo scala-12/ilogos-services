@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import ru.ilogos.auth_service.entity.User;
 import ru.ilogos.auth_service.exceptions.ExceptionWithStatus;
 import ru.ilogos.auth_service.model.RoleType;
+import ru.ilogos.auth_service.model.dto.UserDTO;
 import ru.ilogos.auth_service.model.response.AbstractResponse;
 import ru.ilogos.auth_service.model.response.ErrorResponse;
 import ru.ilogos.auth_service.model.response.SuccessResponse;
@@ -65,7 +66,7 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/register")
-    public ResponseEntity<SuccessResponse<User>> register(@Valid @RequestBody RegistrationRequest req) {
+    public ResponseEntity<SuccessResponse<UserDTO>> register(@Valid @RequestBody RegistrationRequest req) {
         var roles = req.roles.stream()
                 .filter(e -> !e.equals(RoleType.ROLE_ADMIN))
                 .collect(Collectors.toSet());
@@ -79,7 +80,7 @@ public class AuthController {
                 req.isActive.orElseGet(() -> true),
                 roles,
                 req.timezone);
-        return SuccessResponse.response(HttpStatus.CREATED, user);
+        return SuccessResponse.response(HttpStatus.CREATED, UserDTO.from(user));
     }
 
     private ResponseEntity<SuccessResponse<Map<?, ?>>> getJwtResponse(String[] tokens) {

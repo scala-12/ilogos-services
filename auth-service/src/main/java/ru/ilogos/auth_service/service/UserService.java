@@ -51,20 +51,6 @@ public class UserService {
         return user;
     }
 
-    public Optional<User> findUser(Optional<String> username, Optional<String> email) {
-        if (!username.isPresent() && !email.isPresent()) {
-            throw new IllegalArgumentException("username and email undefined");
-        }
-        Optional<User> user;
-        if (username.isPresent()) {
-            user = userRepository.findByUsernameIgnoreCase(username.get());
-        } else {
-            user = userRepository.findByEmailIgnoreCase(email.get());
-        }
-
-        return user;
-    }
-
     public Optional<User> findUser(String usernameOrEmail) {
         return userRepository.findByEmailIgnoreCaseOrUsernameIgnoreCase(usernameOrEmail, usernameOrEmail);
     }
