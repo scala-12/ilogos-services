@@ -64,6 +64,7 @@ public class User {
     @ElementCollection(targetClass = RoleType.class)
     @Enumerated(EnumType.STRING)
     @Singular
+    @Column(name = "role")
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     private Set<RoleType> roles;
 
