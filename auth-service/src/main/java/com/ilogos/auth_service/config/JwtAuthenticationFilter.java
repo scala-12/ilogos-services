@@ -10,10 +10,12 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.ilogos.auth_service.model.TokenInfo;
 import com.ilogos.auth_service.repository.UserRepository;
 import com.ilogos.auth_service.service.JwtService;
 import com.ilogos.auth_service.service.JwtUserDetailsService;
 
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,11 +42,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        var tokenInfo = jwtService.getTokenInfo(authHeader.substring(7));
-        if (!tokenInfo.isAccess()) {
-            filterChain.doFilter(request, response);
-            return;
+        TokenInfo info = null;
+        try {
+            info = jwtService.getTokenInfo(authHeader.substring(7));
+        } catch (SignatureException ex) {
+        } finally {
+            if (info == null || !info.isAccess()) {
+                filterChain.doFilter(request, response);
+                return;
+            }
         }
+        TokenInfo tokenInfo = info;
 
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(tokenInfo.getUsername());
