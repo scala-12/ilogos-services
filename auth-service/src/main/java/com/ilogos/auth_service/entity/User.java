@@ -9,9 +9,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.ilogos.auth_service.model.CitextType;
 import com.ilogos.auth_service.model.RoleType;
 import com.ilogos.auth_service.model.TokenInfo;
 import com.ilogos.auth_service.model.common.UserView;
@@ -76,10 +78,12 @@ public class User implements UserView {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Type(value = CitextType.class)
     @ValidUsername
     @Column(unique = true, columnDefinition = "citext", nullable = false)
     private String username;
 
+    @Type(value = CitextType.class)
     @NotBlank
     @Email
     @Column(unique = true, columnDefinition = "citext", nullable = false)
@@ -188,12 +192,12 @@ public class User implements UserView {
         }
 
         public UserBuilder username(String username) {
-            this.username = username != null ? username.toLowerCase() : null;
+            this.username = username != null ? username.trim() : null;
             return this;
         }
 
         public UserBuilder email(String email) {
-            this.email = email != null ? email.toLowerCase() : null;
+            this.email = email != null ? email.trim().toLowerCase() : null;
             return this;
         }
 
@@ -273,8 +277,8 @@ public class User implements UserView {
     }
 
     public boolean setUsername(String username) {
-        var newUsername = username != null ? username.toLowerCase() : "";
-        if (!newUsername.isBlank()) {
+        if (username != null && !username.isBlank()) {
+            String newUsername = username.trim();
             if (id != null && !newUsername.equals(this.username)) {
                 changedFields.add(Field.USERNAME);
             }
@@ -287,7 +291,7 @@ public class User implements UserView {
     }
 
     public boolean setEmail(String email) {
-        var newEmail = email.toLowerCase();
+        var newEmail = email != null ? email.trim().toLowerCase() : "";
         if (!newEmail.isBlank()) {
             if (id != null && !newEmail.equals(this.email)) {
                 changedFields.add(Field.EMAIL);
