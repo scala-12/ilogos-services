@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.ilogos.auth_service.validation.UsernameValidator;
+import com.ilogos.auth_service.validation.validator.UsernameValidator;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

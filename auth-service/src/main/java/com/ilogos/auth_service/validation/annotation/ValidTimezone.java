@@ -6,7 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.ilogos.auth_service.validation.TimezoneValidator;
+import com.ilogos.auth_service.validation.validator.TimezoneValidator;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
