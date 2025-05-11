@@ -1,13 +1,13 @@
-package com.ilogos.auth_service.usernameHistory;
+package com.ilogos.auth_service.user.usernameHistory;
 
 import java.time.Instant;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 
-import com.ilogos.auth_service.hibernate.CitextType;
 import com.ilogos.auth_service.user.User;
-import com.ilogos.auth_service.validation.annotation.ValidUsername;
+import com.ilogos.auth_service.user.validation.annotation.ValidUsername;
+import com.ilogos.auth_service.utils.hibernate.CitextType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,4 +1,4 @@
-package com.ilogos.auth_service.config.security;
+package com.ilogos.auth_service.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

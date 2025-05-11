@@ -1,4 +1,4 @@
-package com.ilogos.auth_service.hibernate;
+package com.ilogos.auth_service.utils.hibernate;
 
 import java.io.Serial;
 import java.io.Serializable;

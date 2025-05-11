@@ -1,4 +1,4 @@
-package com.ilogos.auth_service.user;
+package com.ilogos.auth_service.user.common;
 
 import org.springframework.security.core.GrantedAuthority;
 

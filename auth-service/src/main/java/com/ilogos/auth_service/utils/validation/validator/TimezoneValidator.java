@@ -1,8 +1,8 @@
-package com.ilogos.auth_service.validation.validator;
+package com.ilogos.auth_service.utils.validation.validator;
 
 import java.time.ZoneId;
 
-import com.ilogos.auth_service.validation.annotation.ValidTimezone;
+import com.ilogos.auth_service.utils.validation.annotation.ValidTimezone;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
