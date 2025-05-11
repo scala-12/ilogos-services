@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ilogos.auth_service.exceptions.ExceptionWithStatus;
 import com.ilogos.auth_service.model.RoleType;
+import com.ilogos.auth_service.model.TokenInfo;
 import com.ilogos.auth_service.model.dto.UserDTO;
 import com.ilogos.auth_service.model.response.SuccessResponse;
 import com.ilogos.auth_service.service.JwtService;
@@ -22,6 +23,7 @@ import com.ilogos.auth_service.service.UserService;
 import com.ilogos.auth_service.service.UserService.TokensData;
 import com.ilogos.auth_service.validation.annotation.ValidTimezone;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -78,7 +80,7 @@ public class AuthController {
             throws NotFoundException {
         if (req.email == null && req.username == null) {
             log.error("login: Username not provided");
-            throw new RuntimeException("Username not provided");
+            throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, "Username not provided");
         }
 
         String username = req.email == null
@@ -93,10 +95,17 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<SuccessResponse<TokensData>> refreshToken(@RequestHeader("Authorization") String authHeader) {
-        var tokenInfo = jwtService.extractTokenInfoFromHeader(authHeader);
+    public ResponseEntity<SuccessResponse<TokensData>> refreshToken(
+            @RequestHeader("Authorization") String authHeader) {
+        TokenInfo tokenInfo;
+        try {
+            tokenInfo = jwtService.extractTokenInfoFromHeader(authHeader);
+        } catch (ExpiredJwtException ex) {
+            throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, ex);
+        }
         var tokens = userService.refreshUserToken(tokenInfo)
-                .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, "JWT refresh failed"));
+                .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED,
+                        "JWT refresh failed"));
 
         return SuccessResponse.response(tokens);
     }

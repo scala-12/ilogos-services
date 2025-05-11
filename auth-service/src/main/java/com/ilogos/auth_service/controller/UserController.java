@@ -11,10 +11,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ilogos.auth_service.exceptions.ExceptionWithStatus;
+import com.ilogos.auth_service.model.TokenInfo;
 import com.ilogos.auth_service.model.dto.UserDTO;
 import com.ilogos.auth_service.model.response.SuccessResponse;
+import com.ilogos.auth_service.service.JwtService;
 import com.ilogos.auth_service.service.UserService;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,20 +27,27 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 public class UserController {
 
-        private final UserService userService;
+    private final UserService userService;
+    private final JwtService jwtService;
 
-        public record UpdateUserRequest(
-                        Optional<String> email,
-                        Optional<String> password,
-                        Optional<String> username) {
-        }
+    public record UpdateUserRequest(
+            Optional<String> email,
+            Optional<String> password,
+            Optional<String> username) {
+    }
 
-        @PutMapping("/update")
-        public ResponseEntity<SuccessResponse<UserDTO>> updateUser(@RequestBody UpdateUserRequest request,
-                        @RequestHeader("Authorization") String authHeader) {
-                var user = userService.updateByAuth(authHeader, request).map(UserDTO::from);
-                return user.map(e -> SuccessResponse.response(e))
-                                .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.FORBIDDEN));
+    @PutMapping("/update")
+    public ResponseEntity<SuccessResponse<UserDTO>> updateUser(@RequestBody UpdateUserRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+        TokenInfo tokenInfo;
+        try {
+            tokenInfo = jwtService.extractTokenInfoFromHeader(authHeader);
+        } catch (ExpiredJwtException ex) {
+            throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, ex);
         }
+        var user = userService.updateByAuth(tokenInfo, request).map(UserDTO::from);
+        return user.map(e -> SuccessResponse.response(e))
+                .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.FORBIDDEN));
+    }
 
 }
