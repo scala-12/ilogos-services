@@ -13,11 +13,17 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ilogos.auth_service.exceptions.ExceptionWithStatus;
 import com.ilogos.auth_service.model.TokenInfo;
 import com.ilogos.auth_service.model.dto.UserDTO;
+import com.ilogos.auth_service.model.response.ErrorResponse;
 import com.ilogos.auth_service.model.response.SuccessResponse;
 import com.ilogos.auth_service.service.JwtService;
 import com.ilogos.auth_service.service.UserService;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,6 +42,12 @@ public class UserController {
             Optional<String> username) {
     }
 
+    @Operation(summary = "Update user data", description = "The user ID is extracted from the access token")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success update"),
+            @ApiResponse(responseCode = "400", description = "Refresh token invalid", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "User not exists", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PutMapping("/update")
     public ResponseEntity<SuccessResponse<UserDTO>> updateUser(@RequestBody UpdateUserRequest request,
             @RequestHeader("Authorization") String authHeader) {
