@@ -79,8 +79,8 @@ public class UserService {
 
                 return tokens;
             } catch (DisabledException ex) {
-                log.info("Auth error: {} disabled", usernameOrEmail);
-                throw new ExceptionWithStatus(HttpStatus.FORBIDDEN, ex);
+                log.info("Auth error (disabled): {}", usernameOrEmail);
+                throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, ex);
             } catch (AuthenticationException ex) {
                 log.info("Auth error: {}", usernameOrEmail);
                 updateFailedAttempts(user);
@@ -136,8 +136,7 @@ public class UserService {
         return update(user);
     }
 
-    public Optional<User> updateByAuth(String authToken, UpdateUserRequest request) {
-        var tokenInfo = jwtService.extractTokenInfoFromHeader(authToken);
+    public Optional<User> updateByAuth(TokenInfo tokenInfo, UpdateUserRequest request) {
         Optional<User> user = userRepository.findById(tokenInfo.getId());
         return user.map(e -> {
             request.email().ifPresent(e::setEmail);
