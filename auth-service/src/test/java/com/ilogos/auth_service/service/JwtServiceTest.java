@@ -11,8 +11,9 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.ilogos.auth_service.entity.User;
-import com.ilogos.auth_service.model.RoleType;
+import com.ilogos.auth_service.auth.JwtService;
+import com.ilogos.auth_service.user.RoleType;
+import com.ilogos.auth_service.user.User;
 
 class JwtServiceTest {
 
