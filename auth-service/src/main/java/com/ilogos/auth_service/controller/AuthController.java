@@ -17,6 +17,7 @@ import com.ilogos.auth_service.exceptions.ExceptionWithStatus;
 import com.ilogos.auth_service.model.RoleType;
 import com.ilogos.auth_service.model.TokenInfo;
 import com.ilogos.auth_service.model.dto.UserDTO;
+import com.ilogos.auth_service.model.response.ErrorResponse;
 import com.ilogos.auth_service.model.response.SuccessResponse;
 import com.ilogos.auth_service.service.JwtService;
 import com.ilogos.auth_service.service.UserService;
@@ -24,6 +25,11 @@ import com.ilogos.auth_service.service.UserService.TokensData;
 import com.ilogos.auth_service.validation.annotation.ValidTimezone;
 
 import io.jsonwebtoken.ExpiredJwtException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -56,6 +62,11 @@ public class AuthController {
     private final UserService userService;
     private final JwtService jwtService;
 
+    @Operation(summary = "User registration")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success creation"),
+            @ApiResponse(responseCode = "400", description = "Invalid user data", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PostMapping("/register")
     public ResponseEntity<SuccessResponse<UserDTO>> register(@Valid @RequestBody RegisterRequest req) {
         var roles = req.roles.stream()
@@ -75,6 +86,11 @@ public class AuthController {
         return SuccessResponse.response(HttpStatus.CREATED, UserDTO.from(user));
     }
 
+    @Operation(summary = "User login", description = "email/username & пароль, returns JWT tokens")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "401", description = "Invalid user data or blocked user", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PostMapping("/login")
     public ResponseEntity<SuccessResponse<TokensData>> login(@Valid @RequestBody LoginRequest req)
             throws NotFoundException {
@@ -94,6 +110,12 @@ public class AuthController {
         return SuccessResponse.response(tokens);
     }
 
+    @Operation(summary = "Update access token", description = "Use with refresh token in header instead access token")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success refreshing"),
+            @ApiResponse(responseCode = "400", description = "Refresh token invalid", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Refresh token expired", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PostMapping("/refresh")
     public ResponseEntity<SuccessResponse<TokensData>> refreshToken(
             @RequestHeader("Authorization") String authHeader) {

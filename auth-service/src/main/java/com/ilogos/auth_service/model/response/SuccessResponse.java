@@ -3,6 +3,7 @@ package com.ilogos.auth_service.model.response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SuccessResponse<T> extends AbstractResponse {
+    @Schema(description = "Response data")
     private T data = null;
 
     public static ResponseEntity<SuccessResponse<?>> response() {
