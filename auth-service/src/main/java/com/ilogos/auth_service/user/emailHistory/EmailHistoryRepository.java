@@ -1,4 +1,4 @@
-package com.ilogos.auth_service.emailHistory;
+package com.ilogos.auth_service.user.emailHistory;
 
 import java.util.Optional;
 

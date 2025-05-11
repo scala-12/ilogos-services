@@ -1,4 +1,4 @@
-package com.ilogos.auth_service.usernameHistory;
+package com.ilogos.auth_service.user.usernameHistory;
 
 import java.util.Optional;
 

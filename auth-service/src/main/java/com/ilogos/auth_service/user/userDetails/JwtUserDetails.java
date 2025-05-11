@@ -1,4 +1,4 @@
-package com.ilogos.auth_service.config.security;
+package com.ilogos.auth_service.user.userDetails;
 
 import java.util.Collection;
 import java.util.List;

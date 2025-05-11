@@ -1,4 +1,4 @@
-package com.ilogos.auth_service.service;
+package com.ilogos.auth_service.auth;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -11,13 +11,12 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.ilogos.auth_service.auth.JwtService;
-import com.ilogos.auth_service.user.RoleType;
 import com.ilogos.auth_service.user.User;
+import com.ilogos.auth_service.user.common.RoleType;
 
-class JwtServiceTest {
+class AuthServiceTest {
 
-    private JwtService jwtService;
+    private AuthService authService;
 
     private static User createUser() {
         try {
@@ -36,18 +35,18 @@ class JwtServiceTest {
 
     @BeforeEach
     void setUp() {
-        jwtService = JwtService.create("verysecretkeyverysecretkeyverysecretkey", 28800000, 604800000);
-        jwtService.init();
+        authService = AuthService.create("verysecretkeyverysecretkeyverysecretkey", 28800000, 604800000);
+        authService.init();
     }
 
     @Test
     void generateAndValidateAccessToken() {
         var user = createUser();
-        String token = jwtService.generateToken(user, true);
+        String token = authService.generateToken(user, true);
 
         assertNotNull(token);
 
-        var tokenInfo = jwtService.getTokenInfo(token);
+        var tokenInfo = authService.getTokenInfo(token);
         assertEquals(user.getUsername(), tokenInfo.getUsername());
         assertTrue(tokenInfo.isValid(user, false));
     }
@@ -55,8 +54,8 @@ class JwtServiceTest {
     @Test
     void tokenShouldExpire() throws InterruptedException {
         var user = createUser();
-        String token = jwtService.generateToken(user, true);
+        String token = authService.generateToken(user, true);
 
-        assertTrue(jwtService.getTokenInfo(token).isValid(user, false));
+        assertTrue(authService.getTokenInfo(token).isValid(user, false));
     }
 }

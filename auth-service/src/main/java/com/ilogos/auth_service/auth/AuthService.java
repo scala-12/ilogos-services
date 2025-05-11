@@ -10,10 +10,10 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.ilogos.auth_service.config.security.JwtConfig;
+import com.ilogos.auth_service.config.JwtConfig;
 import com.ilogos.auth_service.exception.ExceptionWithStatus;
-import com.ilogos.auth_service.user.RoleType;
 import com.ilogos.auth_service.user.User;
+import com.ilogos.auth_service.user.common.RoleType;
 import com.ilogos.auth_service.utils.TokenInfo;
 
 import io.jsonwebtoken.Jwts;
@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class JwtService {
+public class AuthService {
 
     private final JwtConfig jwtConfig;
 
@@ -35,8 +35,8 @@ public class JwtService {
     private long refreshTokenExpiration;
 
     @Profile("test")
-    public static JwtService create(String secretKey, long accessTokenExpiration, long refreshTokenExpiration) {
-        var self = new JwtService(null);
+    public static AuthService create(String secretKey, long accessTokenExpiration, long refreshTokenExpiration) {
+        var self = new AuthService(null);
         self.secretKey = Keys.hmacShaKeyFor(secretKey.getBytes());
         self.accessTokenExpiration = accessTokenExpiration;
         self.refreshTokenExpiration = refreshTokenExpiration;

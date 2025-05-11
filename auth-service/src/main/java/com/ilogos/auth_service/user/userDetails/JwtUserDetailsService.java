@@ -1,11 +1,10 @@
-package com.ilogos.auth_service.auth;
+package com.ilogos.auth_service.user.userDetails;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.ilogos.auth_service.config.security.JwtUserDetails;
 import com.ilogos.auth_service.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;

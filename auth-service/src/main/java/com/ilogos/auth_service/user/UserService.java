@@ -11,13 +11,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 
-import com.ilogos.auth_service.auth.JwtService;
-import com.ilogos.auth_service.emailHistory.EmailHistory;
-import com.ilogos.auth_service.emailHistory.EmailHistoryRepository;
+import com.ilogos.auth_service.auth.AuthService;
 import com.ilogos.auth_service.exception.ExceptionWithStatus;
 import com.ilogos.auth_service.user.UserController.UpdateUserRequest;
-import com.ilogos.auth_service.usernameHistory.UsernameHistory;
-import com.ilogos.auth_service.usernameHistory.UsernameHistoryRepository;
+import com.ilogos.auth_service.user.common.RoleType;
+import com.ilogos.auth_service.user.emailHistory.EmailHistory;
+import com.ilogos.auth_service.user.emailHistory.EmailHistoryRepository;
+import com.ilogos.auth_service.user.usernameHistory.UsernameHistory;
+import com.ilogos.auth_service.user.usernameHistory.UsernameHistoryRepository;
 import com.ilogos.auth_service.utils.TokenInfo;
 
 import jakarta.transaction.Transactional;
@@ -29,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final JwtService jwtService;
+    private final AuthService authService;
 
     private final UserRepository userRepository;
     private final UsernameHistoryRepository usernameHistoryRepository;
@@ -71,7 +72,7 @@ public class UserService {
                         new UsernamePasswordAuthenticationToken(usernameOrEmail, password));
 
                 var tokens = generateTokens(user, Optional.empty());
-                user.setLastTokenIssuedAt(jwtService.getTokenInfo(tokens.accessToken), true);
+                user.setLastTokenIssuedAt(authService.getTokenInfo(tokens.accessToken), true);
 
                 log.info("Auth success: {}", usernameOrEmail);
 
@@ -88,8 +89,8 @@ public class UserService {
     }
 
     private TokensData generateTokens(User user, Optional<String> optionalRefreshToken) {
-        String accessToken = jwtService.generateToken(user, true);
-        String refreshToken = optionalRefreshToken.orElseGet(() -> jwtService.generateToken(user, false));
+        String accessToken = authService.generateToken(user, true);
+        String refreshToken = optionalRefreshToken.orElseGet(() -> authService.generateToken(user, false));
 
         return new TokensData(accessToken, refreshToken);
     }
@@ -101,7 +102,7 @@ public class UserService {
             String username = tokenInfo.getUsername();
 
             var tokens = generateTokens(user, Optional.of(tokenInfo.getToken()));
-            user.setLastTokenIssuedAt(jwtService.getTokenInfo(tokens.accessToken), false);
+            user.setLastTokenIssuedAt(authService.getTokenInfo(tokens.accessToken), false);
 
             log.info("Token refresh success: {}", username);
 

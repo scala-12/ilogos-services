@@ -4,8 +4,8 @@ import java.security.Key;
 import java.util.Date;
 import java.util.UUID;
 
-import com.ilogos.auth_service.user.UserMinimalView;
-import com.ilogos.auth_service.user.UserView;
+import com.ilogos.auth_service.user.common.UserMinimalView;
+import com.ilogos.auth_service.user.common.UserView;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

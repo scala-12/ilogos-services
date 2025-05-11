@@ -10,9 +10,9 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.ilogos.auth_service.auth.JwtService;
-import com.ilogos.auth_service.auth.JwtUserDetailsService;
+import com.ilogos.auth_service.auth.AuthService;
 import com.ilogos.auth_service.user.UserRepository;
+import com.ilogos.auth_service.user.userDetails.JwtUserDetailsService;
 import com.ilogos.auth_service.utils.TokenInfo;
 
 import io.jsonwebtoken.security.SignatureException;
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+    private final AuthService authService;
     private final JwtUserDetailsService userDetailsService;
     private final UserRepository userRepository;
 
@@ -44,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         TokenInfo info = null;
         try {
-            info = jwtService.getTokenInfo(authHeader.substring(7));
+            info = authService.getTokenInfo(authHeader.substring(7));
         } catch (SignatureException ex) {
         } finally {
             if (info == null || !info.isAccess()) {

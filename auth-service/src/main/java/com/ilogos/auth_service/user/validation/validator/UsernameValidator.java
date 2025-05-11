@@ -1,6 +1,6 @@
-package com.ilogos.auth_service.validation.validator;
+package com.ilogos.auth_service.user.validation.validator;
 
-import com.ilogos.auth_service.validation.annotation.ValidUsername;
+import com.ilogos.auth_service.user.validation.annotation.ValidUsername;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

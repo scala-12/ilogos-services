@@ -1,12 +1,12 @@
-package com.ilogos.auth_service.emailHistory;
+package com.ilogos.auth_service.user.emailHistory;
 
 import java.time.Instant;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 
-import com.ilogos.auth_service.hibernate.CitextType;
 import com.ilogos.auth_service.user.User;
+import com.ilogos.auth_service.utils.hibernate.CitextType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

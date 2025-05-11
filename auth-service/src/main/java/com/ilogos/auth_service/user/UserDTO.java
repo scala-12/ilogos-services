@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
+import com.ilogos.auth_service.user.common.UserView;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
