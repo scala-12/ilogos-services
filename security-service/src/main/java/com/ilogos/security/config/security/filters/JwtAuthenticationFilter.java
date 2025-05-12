@@ -1,4 +1,4 @@
-package com.ilogos.security.config.security;
+package com.ilogos.security.config.security.filters;
 
 import java.io.IOException;
 
