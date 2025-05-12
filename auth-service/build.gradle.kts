@@ -7,6 +7,9 @@ plugins {
 group = "com.ilogos"
 version = "0.0.1-SNAPSHOT"
 
+val jjwtVersion = "0.11.5"
+val springdocVersion = "2.8.8"
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -32,9 +35,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
 
     // JWT
-    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
 
     // Lombok
     compileOnly("org.projectlombok:lombok")
@@ -43,14 +46,14 @@ dependencies {
     // PostgreSQL
     runtimeOnly("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-core")
-	implementation("org.flywaydb:flyway-database-postgresql")
+    implementation("org.flywaydb:flyway-database-postgresql")
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     // Swagger/OpenAPI
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
 }
 
 tasks.withType<Test> {
