@@ -21,7 +21,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.ilogos.security.config.JwtConfig;
 import com.ilogos.security.exception.ExceptionWithStatus;
 import com.ilogos.security.user.User;
 import com.ilogos.security.user.common.RoleType;
