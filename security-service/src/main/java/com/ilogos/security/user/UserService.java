@@ -3,6 +3,7 @@ package com.ilogos.security.user;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -62,9 +63,12 @@ public class UserService {
     public record UserWithTokens(User user, TokensData tokens) {
     }
 
-    public Optional<UserWithTokens> generateTokens(String usernameOrEmail, String password) {
+    public Optional<UserWithTokens> assignJwtTokens(
+            String usernameOrEmail,
+            String password,
+            Function<User, TokensData> generator) {
         return userRepository.findByEmailOrUsername(usernameOrEmail, usernameOrEmail).map(user -> {
-            var tokens = generateTokens(user, Optional.empty());
+            var tokens = generator.apply(user);
 
             user.setLastTokenIssuedAt(jwtService.getTokenInfo(tokens.accessToken), true);
             update(user);
@@ -73,31 +77,24 @@ public class UserService {
         });
     }
 
-    private TokensData generateTokens(User user, Optional<String> optionalRefreshToken) {
-        String accessToken = jwtService.generateToken(user, true);
-        String refreshToken = optionalRefreshToken.orElseGet(() -> jwtService.generateToken(user, false));
-
-        return new TokensData(accessToken, refreshToken);
-    }
-
-    public Optional<TokensData> refreshUserToken(TokenInfo tokenInfo) {
+    public Optional<TokensData> assignRefreshToken(TokenInfo tokenInfo, Function<User, TokensData> generator) {
         User user = userRepository.findById(tokenInfo.getId())
                 .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED));
         if (tokenInfo.isRefresh() && tokenInfo.isValid(user, false)) {
             String username = tokenInfo.getUsername();
 
-            var tokens = generateTokens(user, Optional.of(tokenInfo.getToken()));
+            var tokens = generator.apply(user);
             user.setLastTokenIssuedAt(jwtService.getTokenInfo(tokens.accessToken), false);
             update(user);
 
             log.info("Token refresh success: {}", username);
 
             return Optional.of(tokens);
-        } else {
-            log.info("Token refresh error: {}", user.getUsername());
-
-            return Optional.empty();
         }
+
+        log.info("Token refresh error: {}", user.getUsername());
+
+        return Optional.empty();
     }
 
     @Transactional

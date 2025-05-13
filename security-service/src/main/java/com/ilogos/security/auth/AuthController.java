@@ -13,7 +13,6 @@ import com.ilogos.security.exception.ExceptionWithStatus;
 import com.ilogos.security.jwt.JwtService;
 import com.ilogos.security.response.ErrorResponse;
 import com.ilogos.security.response.SuccessResponse;
-import com.ilogos.security.user.UserService;
 import com.ilogos.security.user.UserService.TokensData;
 import com.ilogos.security.utils.TokenInfo;
 
@@ -41,7 +40,6 @@ public class AuthController {
             @Size(min = 3, max = 64) String password) {
     }
 
-    private final UserService userService;
     private final JwtService jwtService;
     private final AuthService authService;
 
@@ -84,7 +82,7 @@ public class AuthController {
         } catch (ExpiredJwtException ex) {
             throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, ex);
         }
-        var tokens = userService.refreshUserToken(tokenInfo)
+        var tokens = authService.refreshJwtToken(tokenInfo)
                 .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED,
                         "JWT refresh failed"));
 
