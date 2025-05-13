@@ -10,7 +10,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.ilogos.security.auth.AuthService;
+import com.ilogos.security.jwt.JwtService;
 import com.ilogos.security.user.UserRepository;
 import com.ilogos.security.user.jwt.JwtUserDetailsService;
 import com.ilogos.security.utils.TokenInfo;
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final AuthService authService;
+    private final JwtService jwtService;
     private final JwtUserDetailsService userDetailsService;
     private final UserRepository userRepository;
 
@@ -44,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         TokenInfo info = null;
         try {
-            info = authService.getTokenInfo(authHeader.substring(7));
+            info = jwtService.getTokenInfo(authHeader.substring(7));
         } catch (SignatureException ex) {
         } finally {
             if (info == null || !info.isAccess()) {
