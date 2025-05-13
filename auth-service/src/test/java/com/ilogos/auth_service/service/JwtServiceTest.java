@@ -4,8 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -34,8 +40,14 @@ class JwtServiceTest {
     }
 
     @BeforeEach
-    void setUp() {
-        jwtService = JwtService.create("verysecretkeyverysecretkeyverysecretkey", 28800000, 604800000);
+    void setUp() throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
+        SecureRandom random = SecureRandom.getInstance("SHA1PRNG", "SUN");
+        random.nextBytes(new byte[] {}); // toss out the first result to ensure it seeds randomly from the system.
+
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+        keyGen.initialize(2048, random);
+        KeyPair keyPair = keyGen.genKeyPair();
+        jwtService = JwtService.create(keyPair, 28800000, 604800000);
         jwtService.init();
     }
 

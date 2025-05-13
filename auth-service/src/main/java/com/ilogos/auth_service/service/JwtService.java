@@ -1,6 +1,17 @@
 package com.ilogos.auth_service.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.Key;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +29,6 @@ import com.ilogos.auth_service.model.TokenInfo;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,31 +40,69 @@ public class JwtService {
 
     private final JwtConfig jwtConfig;
 
-    private Key secretKey;
+    private KeyPair keyPair;
     private long accessTokenExpiration;
     private long refreshTokenExpiration;
 
     @Profile("test")
-    public static JwtService create(String secretKey, long accessTokenExpiration, long refreshTokenExpiration) {
+    public static JwtService create(KeyPair keyPair, long accessTokenExpiration,
+            long refreshTokenExpiration) {
         var self = new JwtService(null);
-        self.secretKey = Keys.hmacShaKeyFor(secretKey.getBytes());
-        self.accessTokenExpiration = accessTokenExpiration;
-        self.refreshTokenExpiration = refreshTokenExpiration;
+        self.init(keyPair, accessTokenExpiration, refreshTokenExpiration);
 
         return self;
     }
 
-    @PostConstruct
-    public void init() {
-        if (this.jwtConfig != null) {
-            this.secretKey = Keys.hmacShaKeyFor(jwtConfig.getSecretKey().getBytes());
-            this.accessTokenExpiration = jwtConfig.getAccessTokenExpiration();
-            this.refreshTokenExpiration = jwtConfig.getRefreshTokenExpiration();
+    private Key loadKey(boolean isPrivate) throws IOException {
+        String pem = Files.readString(Path.of(isPrivate
+                ? jwtConfig.getPrivateKeyPath()
+                : jwtConfig.getPublicKeyPath()));
+
+        if (pem == null || pem.isBlank()) {
+            throw new IllegalStateException("Private key is missing");
+        }
+        String key = (isPrivate
+                ? pem.replace("-----BEGIN PRIVATE KEY-----", "")
+                        .replace("-----END PRIVATE KEY-----", "")
+                : pem.replace("-----BEGIN PUBLIC KEY-----", "")
+                        .replace("-----END PUBLIC KEY-----", ""))
+                .replaceAll("\\s", "");
+        byte[] decoded = Base64.getDecoder().decode(key);
+        EncodedKeySpec keySpec = isPrivate ? new PKCS8EncodedKeySpec(decoded) : new X509EncodedKeySpec(decoded);
+        try {
+            KeyFactory factory = KeyFactory.getInstance("RSA");
+            return isPrivate
+                    ? factory.generatePrivate(keySpec)
+                    : factory.generatePublic(keySpec);
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to load RSA private key", e);
         }
     }
 
+    private KeyPair loadKeys() throws IOException {
+        PrivateKey privateKey = (PrivateKey) loadKey(true);
+        PublicKey publicKey = (PublicKey) loadKey(false);
+        return new KeyPair(publicKey, privateKey);
+    }
+
+    @PostConstruct
+    public void init() throws IOException {
+        if (this.jwtConfig != null) {
+            var keyPair = loadKeys();
+            init(keyPair, jwtConfig.getAccessTokenExpiration(),
+                    jwtConfig.getRefreshTokenExpiration());
+        }
+    }
+
+    private void init(KeyPair keyPair, long accessTokenExpiration,
+            long refreshTokenExpiration) {
+        this.keyPair = keyPair;
+        this.accessTokenExpiration = accessTokenExpiration;
+        this.refreshTokenExpiration = refreshTokenExpiration;
+    }
+
     public TokenInfo getTokenInfo(String token) {
-        return new TokenInfo(token, secretKey);
+        return new TokenInfo(token, keyPair.getPublic());
     }
 
     public TokenInfo extractTokenInfoFromHeader(String header) {
@@ -65,7 +113,7 @@ public class JwtService {
             log.info("Bearer token not setted");
             throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, "Bearer token not setted");
         }
-        return new TokenInfo(token.get(), secretKey);
+        return new TokenInfo(token.get(), keyPair.getPublic());
     }
 
     public String generateToken(User user, boolean isAccess) {
@@ -85,7 +133,7 @@ public class JwtService {
                 .setSubject(user.getId().toString())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
-                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .signWith(keyPair.getPrivate(), SignatureAlgorithm.RS256)
                 .compact();
 
         return token;
