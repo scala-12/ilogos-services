@@ -1,6 +1,6 @@
 package com.ilogos.auth_service.model;
 
-import java.security.Key;
+import java.security.PublicKey;
 import java.util.Date;
 import java.util.UUID;
 
@@ -22,10 +22,10 @@ public class TokenInfo implements UserMinimalView {
         UNDEFINED
     }
 
-    public TokenInfo(String token, Key secretKey) {
+    public TokenInfo(String token, PublicKey publicKey) {
         this.token = token;
         this.claims = Jwts.parserBuilder()
-                .setSigningKey(secretKey)
+                .setSigningKey(publicKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();

@@ -1,9 +1,14 @@
 {
   "properties": [
     {
-      "name": "jwt.secret",
+      "name": "jwt.secretPath",
       "type": "java.lang.String",
-      "description": "Secret for JWT tokens"
+      "description": "Path to private.pem file for JWT tokens"
+    },
+    {
+      "name": "jwt.publicPath",
+      "type": "java.lang.String",
+      "description": "Path to public.pem file for JWT tokens"
     },
     {
       "name": "jwt.refreshTokenExpiration",

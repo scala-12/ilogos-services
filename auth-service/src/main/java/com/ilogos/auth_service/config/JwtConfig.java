@@ -9,8 +9,11 @@ import lombok.Getter;
 @Configuration
 public class JwtConfig {
 
-    @Value("${jwt.secret}")
-    private String secretKey;
+    @Value("${jwt.secretPath}")
+    private String privateKeyPath;
+
+    @Value("${jwt.publicPath}")
+    private String publicKeyPath;
 
     @Value("${jwt.accessTokenExpiration}")
     private long accessTokenExpiration;
