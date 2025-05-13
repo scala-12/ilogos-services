@@ -1,4 +1,4 @@
-package com.ilogos.security.user.userDetails;
+package com.ilogos.security.user.jwt;
 
 import java.util.Collection;
 import java.util.List;

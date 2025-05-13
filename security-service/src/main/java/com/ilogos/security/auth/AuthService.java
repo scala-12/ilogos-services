@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 
 import com.ilogos.security.exception.ExceptionWithStatus;
 import com.ilogos.security.user.User;
-import com.ilogos.security.user.common.RoleType;
+import com.ilogos.security.user.model.RoleType;
 import com.ilogos.security.utils.TokenInfo;
 
 import io.jsonwebtoken.Jwts;

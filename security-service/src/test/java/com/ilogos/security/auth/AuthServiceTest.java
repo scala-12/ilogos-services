@@ -18,7 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.ilogos.security.user.User;
-import com.ilogos.security.user.common.RoleType;
+import com.ilogos.security.user.model.RoleType;
 
 class AuthServiceTest {
 

@@ -17,7 +17,8 @@ import com.ilogos.security.auth.AuthService;
 import com.ilogos.security.exception.ExceptionWithStatus;
 import com.ilogos.security.response.ErrorResponse;
 import com.ilogos.security.response.SuccessResponse;
-import com.ilogos.security.user.common.RoleType;
+import com.ilogos.security.user.model.RoleType;
+import com.ilogos.security.user.model.UserDTO;
 import com.ilogos.security.utils.TokenInfo;
 import com.ilogos.security.utils.validation.annotation.ValidTimezone;
 

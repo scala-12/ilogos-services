@@ -1,4 +1,4 @@
-package com.ilogos.security.user.userDetails;
+package com.ilogos.security.user.jwt;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

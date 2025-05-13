@@ -12,7 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.ilogos.security.auth.AuthService;
 import com.ilogos.security.user.UserRepository;
-import com.ilogos.security.user.userDetails.JwtUserDetailsService;
+import com.ilogos.security.user.jwt.JwtUserDetailsService;
 import com.ilogos.security.utils.TokenInfo;
 
 import io.jsonwebtoken.security.SignatureException;
