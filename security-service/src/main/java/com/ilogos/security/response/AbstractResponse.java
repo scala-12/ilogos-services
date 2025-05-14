@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class AbstractResponse {
+public abstract class AbstractResponse {
     private LocalDateTime timestamp = LocalDateTime.now();
 }

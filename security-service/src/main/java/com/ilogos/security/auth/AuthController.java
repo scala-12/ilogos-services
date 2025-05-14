@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ilogos.security.exception.ExceptionWithStatus;
+import com.ilogos.security.jwt.JwtService;
 import com.ilogos.security.response.ErrorResponse;
 import com.ilogos.security.response.SuccessResponse;
-import com.ilogos.security.user.UserService;
 import com.ilogos.security.user.UserService.TokensData;
 import com.ilogos.security.utils.TokenInfo;
 
@@ -40,7 +40,7 @@ public class AuthController {
             @Size(min = 3, max = 64) String password) {
     }
 
-    private final UserService userService;
+    private final JwtService jwtService;
     private final AuthService authService;
 
     @Operation(summary = "User login", description = "email/username & пароль, returns JWT tokens")
@@ -56,11 +56,11 @@ public class AuthController {
             throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, "Username not provided");
         }
 
-        String username = req.email == null
+        String usernameOrEmail = req.email == null
                 ? req.username
                 : req.email;
 
-        var tokens = userService.authenticate(username, req.password)
+        var tokens = authService.authenticate(usernameOrEmail, req.password)
                 .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED,
                         "Unable to log in with the provided data"));
 
@@ -78,11 +78,11 @@ public class AuthController {
             @RequestHeader("Authorization") String authHeader) {
         TokenInfo tokenInfo;
         try {
-            tokenInfo = authService.extractTokenInfoFromHeader(authHeader);
+            tokenInfo = jwtService.extractTokenInfoFromHeader(authHeader);
         } catch (ExpiredJwtException ex) {
             throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, ex);
         }
-        var tokens = userService.refreshUserToken(tokenInfo)
+        var tokens = authService.refreshJwtToken(tokenInfo)
                 .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED,
                         "JWT refresh failed"));
 

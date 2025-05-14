@@ -17,12 +17,13 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.ilogos.security.jwt.JwtService;
 import com.ilogos.security.user.User;
-import com.ilogos.security.user.common.RoleType;
+import com.ilogos.security.user.model.RoleType;
 
 class AuthServiceTest {
 
-    private AuthService authService;
+    private JwtService jwtService;
 
     private static User createUser() {
         try {
@@ -47,18 +48,18 @@ class AuthServiceTest {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         keyGen.initialize(2048, random);
         KeyPair keyPair = keyGen.genKeyPair();
-        authService = AuthService.create(keyPair, 28800000, 604800000);
-        authService.init();
+        jwtService = AuthService.create(keyPair, 28800000, 604800000);
+        jwtService.init();
     }
 
     @Test
     void generateAndValidateAccessToken() {
         var user = createUser();
-        String token = authService.generateToken(user, true);
+        String token = jwtService.generateToken(user, true);
 
         assertNotNull(token);
 
-        var tokenInfo = authService.getTokenInfo(token);
+        var tokenInfo = jwtService.getTokenInfo(token);
         assertEquals(user.getUsername(), tokenInfo.getUsername());
         assertTrue(tokenInfo.isValid(user, false));
     }
@@ -66,8 +67,8 @@ class AuthServiceTest {
     @Test
     void tokenShouldExpire() throws InterruptedException {
         var user = createUser();
-        String token = authService.generateToken(user, true);
+        String token = jwtService.generateToken(user, true);
 
-        assertTrue(authService.getTokenInfo(token).isValid(user, false));
+        assertTrue(jwtService.getTokenInfo(token).isValid(user, false));
     }
 }

@@ -1,4 +1,4 @@
-package com.ilogos.security.auth;
+package com.ilogos.security.jwt;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

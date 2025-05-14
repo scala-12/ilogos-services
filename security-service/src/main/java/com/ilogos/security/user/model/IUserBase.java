@@ -1,8 +1,8 @@
-package com.ilogos.security.user.common;
+package com.ilogos.security.user.model;
 
 import java.util.UUID;
 
-public interface UserMinimalView {
+public interface IUserBase {
     UUID getId();
 
     String getUsername();
