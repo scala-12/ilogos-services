@@ -29,11 +29,13 @@ repositories {
 dependencies {
     // Spring Boot Starters
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-security")
 
     // JWT
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 
     // Lombok
     compileOnly("org.projectlombok:lombok")
