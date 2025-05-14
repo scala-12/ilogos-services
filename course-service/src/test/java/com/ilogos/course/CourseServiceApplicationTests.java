@@ -1,4 +1,4 @@
-package com.ilogos.course_service;
+package com.ilogos.course;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

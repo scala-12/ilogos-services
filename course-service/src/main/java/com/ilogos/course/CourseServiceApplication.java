@@ -1,4 +1,4 @@
-package com.ilogos.course_service;
+package com.ilogos.course;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
