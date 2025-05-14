@@ -13,11 +13,12 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ilogos.security.auth.AuthService;
 import com.ilogos.security.exception.ExceptionWithStatus;
+import com.ilogos.security.jwt.JwtService;
 import com.ilogos.security.response.ErrorResponse;
 import com.ilogos.security.response.SuccessResponse;
-import com.ilogos.security.user.common.RoleType;
+import com.ilogos.security.user.model.RoleType;
+import com.ilogos.security.user.model.UserDTO;
 import com.ilogos.security.utils.TokenInfo;
 import com.ilogos.security.utils.validation.annotation.ValidTimezone;
 
@@ -42,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
 
         private final UserService userService;
-        private final AuthService authService;
+        private final JwtService jwtService;
 
         public record UpdateUserRequest(
                         Optional<String> email,
@@ -70,11 +71,11 @@ public class UserController {
                         @RequestHeader("Authorization") String authHeader) {
                 TokenInfo tokenInfo;
                 try {
-                        tokenInfo = authService.extractTokenInfoFromHeader(authHeader);
+                        tokenInfo = jwtService.extractTokenInfoFromHeader(authHeader);
                 } catch (ExpiredJwtException ex) {
                         throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, ex);
                 }
-                var user = userService.updateByAuth(tokenInfo, request).map(UserDTO::from);
+                var user = userService.updateSelf(tokenInfo, request).map(UserDTO::from);
                 return user.map(e -> SuccessResponse.response(e))
                                 .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.FORBIDDEN));
         }

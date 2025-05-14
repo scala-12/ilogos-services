@@ -13,9 +13,9 @@ import org.hibernate.annotations.Type;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.ilogos.security.user.common.RoleType;
-import com.ilogos.security.user.common.UserView;
 import com.ilogos.security.user.emailHistory.EmailHistory;
+import com.ilogos.security.user.model.IUser;
+import com.ilogos.security.user.model.RoleType;
 import com.ilogos.security.user.usernameHistory.UsernameHistory;
 import com.ilogos.security.user.validation.annotation.ValidUsername;
 import com.ilogos.security.utils.TokenInfo;
@@ -56,7 +56,7 @@ import lombok.Singular;
 @NoArgsConstructor
 @Builder
 @Table(name = "app_user")
-public class User implements UserView {
+public class User implements IUser {
 
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 

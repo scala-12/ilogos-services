@@ -4,15 +4,15 @@ import java.security.PublicKey;
 import java.util.Date;
 import java.util.UUID;
 
-import com.ilogos.security.user.common.UserMinimalView;
-import com.ilogos.security.user.common.UserView;
+import com.ilogos.security.user.model.IUser;
+import com.ilogos.security.user.model.IUserBase;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.Getter;
 
 @Getter
-public class TokenInfo implements UserMinimalView {
+public class TokenInfo implements IUserBase {
     private final Claims claims;
     private final String token;
 
@@ -35,12 +35,12 @@ public class TokenInfo implements UserMinimalView {
         return claims.getExpiration().before(new Date());
     }
 
-    public boolean isValid(UserView user, boolean checkIat) {
+    public boolean isValid(IUser user, boolean checkIat) {
         return user != null && user.getUsername().equals(getUsername()) && !isExpired()
                 && (!checkIat || !getIssuedAt().toInstant().isBefore(user.getLastTokenIssuedAt()));
     }
 
-    public boolean isValid(UserView user) {
+    public boolean isValid(IUser user) {
         return isValid(user, true);
     }
 

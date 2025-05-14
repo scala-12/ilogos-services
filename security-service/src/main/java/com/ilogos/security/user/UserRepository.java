@@ -6,6 +6,8 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.ilogos.security.user.model.UserProjection;
+
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<UserProjection> findUserByUsername(String username);
 
