@@ -48,7 +48,7 @@ class AuthServiceTest {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         keyGen.initialize(2048, random);
         KeyPair keyPair = keyGen.genKeyPair();
-        jwtService = AuthService.create(keyPair, 28800000, 604800000);
+        jwtService = JwtService.create(keyPair, 28800000, 604800000);
         jwtService.init();
     }
 
