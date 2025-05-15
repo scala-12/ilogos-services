@@ -9,11 +9,9 @@ import org.springframework.context.annotation.Configuration
 class OpenApiConfig {
 
     @Bean
-    fun customOpenAPI(): OpenAPI =
-            OpenAPI()
-                    .info(
-                            Info().title("Auth Service API")
-                                    .version("1.0")
-                                    .description("Documentation for iLogos authorization service")
-                    )
+    fun customOpenAPI(): OpenAPI = OpenAPI().info(
+        Info().title("Auth Service API")
+            .version("1.0")
+            .description("Documentation for iLogos authorization service")
+    )
 }

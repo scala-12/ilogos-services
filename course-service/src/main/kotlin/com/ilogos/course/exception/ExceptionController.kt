@@ -18,11 +18,11 @@ class ExceptionController {
 
     @ExceptionHandler(ExceptionWithStatus::class)
     fun handleExceptionWithStatus(ex: ExceptionWithStatus) =
-            ErrorResponse.response(ex.status, ex.message)
+        ErrorResponse.response(ex.status, ex.message)
 
     @ExceptionHandler(ConstraintViolationException::class)
     fun handleConstraintViolationException(
-            ex: ConstraintViolationException
+        ex: ConstraintViolationException
     ): ResponseEntity<ErrorResponse> {
         val errors = ex.constraintViolations.map { "${it.propertyPath}: ${it.message}" }
         return ErrorResponse.response(HttpStatus.BAD_REQUEST, errors)
@@ -30,7 +30,7 @@ class ExceptionController {
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidationExceptions(
-            ex: MethodArgumentNotValidException
+        ex: MethodArgumentNotValidException
     ): ResponseEntity<ErrorResponse> {
         val errors = ex.bindingResult.fieldErrors.map { "${it.field}: ${it.defaultMessage}" }
         return ErrorResponse.response(HttpStatus.BAD_REQUEST, errors)
@@ -38,11 +38,11 @@ class ExceptionController {
 
     @ExceptionHandler(SignatureException::class)
     fun handleSignatureException(ex: SignatureException) =
-            ErrorResponse.response(HttpStatus.BAD_REQUEST, ex)
+        ErrorResponse.response(HttpStatus.BAD_REQUEST, ex)
 
     @ExceptionHandler(MalformedJwtException::class)
     fun handleMalformedJwtException() =
-            ErrorResponse.response(HttpStatus.BAD_REQUEST, "Malformed JWT")
+        ErrorResponse.response(HttpStatus.BAD_REQUEST, "Malformed JWT")
 
     @ExceptionHandler(Exception::class)
     fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {

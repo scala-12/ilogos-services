@@ -8,11 +8,13 @@ class SuccessResponse<T>(@Schema(description = "Response data") val data: T?) : 
 
     companion object {
         fun response(): ResponseEntity<SuccessResponse<Any>> {
-            return ResponseEntity.status(HttpStatus.OK).body(SuccessResponse<Any>(null))
+            return ResponseEntity.status(HttpStatus.OK)
+                .body(SuccessResponse<Any>(null))
         }
 
         fun <T> response(data: T): ResponseEntity<SuccessResponse<T>> {
-            return ResponseEntity.status(HttpStatus.OK).body(SuccessResponse(data))
+            return ResponseEntity.status(HttpStatus.OK)
+                .body(SuccessResponse(data))
         }
 
         fun <T> response(status: HttpStatus, data: T): ResponseEntity<SuccessResponse<T>> {

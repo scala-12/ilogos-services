@@ -12,21 +12,20 @@ class SecurityConfig(private val jwtService: JwtService) {
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
-        val builder =
-                http.authorizeHttpRequests({
-                            it.requestMatchers(
-                                            "/v3/api-docs/**",
-                                            "/swagger-ui/**",
-                                            "/swagger-ui.html"
-                                    )
-                                    .permitAll()
-                                    .anyRequest()
-                                    .authenticated()
-                        })
-                        .oauth2ResourceServer { it.jwt(Customizer.withDefaults()) }
+        val builder = http.authorizeHttpRequests({
+            it.requestMatchers(
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
+                "/swagger-ui.html"
+            )
+                .permitAll()
+                .anyRequest()
+                .authenticated()
+        }).oauth2ResourceServer { it.jwt(Customizer.withDefaults()) }
 
         return builder.build()
     }
 
-    @Bean fun jwtDecoder() = jwtService.buildJwtDecoder()
+    @Bean
+    fun jwtDecoder() = jwtService.buildJwtDecoder()
 }

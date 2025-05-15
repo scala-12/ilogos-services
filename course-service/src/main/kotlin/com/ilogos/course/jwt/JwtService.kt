@@ -3,6 +3,12 @@ package com.ilogos.course.jwt
 import com.ilogos.course.exception.ExceptionWithStatus
 import com.ilogos.course.utils.TokenInfo
 import jakarta.annotation.PostConstruct
+import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Profile
+import org.springframework.http.HttpStatus
+import org.springframework.security.oauth2.jwt.JwtDecoder
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
+import org.springframework.stereotype.Service
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -11,17 +17,12 @@ import java.security.PublicKey
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.X509EncodedKeySpec
 import java.util.*
-import org.slf4j.LoggerFactory
-import org.springframework.context.annotation.Profile
-import org.springframework.http.HttpStatus
-import org.springframework.security.oauth2.jwt.JwtDecoder
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
-import org.springframework.stereotype.Service
+
 
 @Service
 class JwtService(private val _jwtConfig: JwtConfig?) {
 
-    lateinit private var publicKey: PublicKey
+    private lateinit var publicKey: PublicKey
 
     val jwtConfig: JwtConfig
         get() = _jwtConfig ?: throw IllegalStateException("Jwt-service has not been initialized")
@@ -43,10 +44,8 @@ class JwtService(private val _jwtConfig: JwtConfig?) {
         val pem = Files.readString(Path.of(jwtConfig.publicPath))
         if (pem.isBlank()) throw IllegalStateException("Private key is missing")
 
-        val key =
-                pem.replace("-----BEGIN PUBLIC KEY-----", "")
-                        .replace("-----END PUBLIC KEY-----", "")
-                        .replace("\\s".toRegex(), "")
+        val key = pem.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "")
+            .replace("\\s".toRegex(), "")
 
         val decoded = Base64.getDecoder().decode(key)
         val keySpec = X509EncodedKeySpec(decoded)
@@ -66,11 +65,13 @@ class JwtService(private val _jwtConfig: JwtConfig?) {
         }
     }
 
+    fun getTokenInfo(token: String): TokenInfo = TokenInfo(token, publicKey)
+
     fun extractTokenInfoFromHeader(header: String): TokenInfo {
         val token = if (header.startsWith("Bearer ")) header.removePrefix("Bearer ").trim() else ""
         if (token.isBlank()) {
-            log.info("Bearer token not setted")
-            throw ExceptionWithStatus(HttpStatus.UNAUTHORIZED, "Bearer token not setted")
+            log.info("Bearer token not set")
+            throw ExceptionWithStatus(HttpStatus.UNAUTHORIZED, "Bearer token not set")
         }
 
         return TokenInfo(token, publicKey)

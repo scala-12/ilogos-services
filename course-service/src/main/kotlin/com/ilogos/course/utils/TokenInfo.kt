@@ -6,17 +6,17 @@ import io.jsonwebtoken.Jwts
 import java.security.PublicKey
 import java.util.*
 
-class TokenInfo(private val token: String, publicKey: PublicKey) : IUser {
-    private val claims: Claims =
-            Jwts.parserBuilder().setSigningKey(publicKey).build().parseClaimsJws(token).getBody()
+class TokenInfo(token: String, publicKey: PublicKey) : IUser {
+
+    val token = token
+
+    private val claims: Claims = Jwts.parserBuilder().setSigningKey(publicKey).build().parseClaimsJws(token).getBody()
 
     enum class Type {
-        ACCESS,
-        REFRESH,
-        UNDEFINED
+        ACCESS, REFRESH, UNDEFINED
     }
 
-    val isExpired: Boolean
+    val expired: Boolean
         get() = claims.expiration.before(Date())
 
     val type: Type

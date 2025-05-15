@@ -1,6 +1,6 @@
 package com.ilogos.course.user
 
-import java.util.UUID
+import java.util.*
 
 interface IUser {
     val id: UUID
