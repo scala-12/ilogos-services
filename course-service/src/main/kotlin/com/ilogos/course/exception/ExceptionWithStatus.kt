@@ -1,22 +1,11 @@
-package com.ilogos.course.exception;
+package com.ilogos.course.exception
 
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatus
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+class ExceptionWithStatus(val status: HttpStatus, message: String?, cause: Throwable? = null) :
+        RuntimeException(message, cause) {
 
-@AllArgsConstructor
-@Getter
-public class ExceptionWithStatus extends RuntimeException {
-    final private HttpStatus status;
+    constructor(status: HttpStatus, ex: Exception) : this(status, ex.message, ex)
 
-    public ExceptionWithStatus(HttpStatus status, Exception ex) {
-        super(ex.getMessage());
-        this.status = status;
-    }
-
-    public ExceptionWithStatus(HttpStatus status, String msg) {
-        super(msg);
-        this.status = status;
-    }
+    constructor(status: HttpStatus, msg: String) : this(status, msg, null)
 }

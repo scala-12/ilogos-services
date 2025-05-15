@@ -1,59 +1,52 @@
-package com.ilogos.course.exception;
+package com.ilogos.course.exception
 
-import java.util.ArrayList;
-import java.util.List;
+import com.ilogos.course.response.ErrorResponse
+import io.jsonwebtoken.MalformedJwtException
+import io.jsonwebtoken.security.SignatureException
+import jakarta.validation.ConstraintViolationException
+import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.annotation.ControllerAdvice
+import org.springframework.web.bind.annotation.ExceptionHandler
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import com.ilogos.course.response.ErrorResponse;
-
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.security.SignatureException;
-import jakarta.validation.ConstraintViolationException;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @ControllerAdvice
-public class ExceptionController {
-    @ExceptionHandler(ExceptionWithStatus.class)
-    public ResponseEntity<ErrorResponse> handleExceptionWithStatus(ExceptionWithStatus ex) {
-        return ErrorResponse.response(ex.getStatus(), ex.getMessage());
+class ExceptionController {
+
+    private val log = LoggerFactory.getLogger(ExceptionController::class.java)
+
+    @ExceptionHandler(ExceptionWithStatus::class)
+    fun handleExceptionWithStatus(ex: ExceptionWithStatus) =
+            ErrorResponse.response(ex.status, ex.message)
+
+    @ExceptionHandler(ConstraintViolationException::class)
+    fun handleConstraintViolationException(
+            ex: ConstraintViolationException
+    ): ResponseEntity<ErrorResponse> {
+        val errors = ex.constraintViolations.map { "${it.propertyPath}: ${it.message}" }
+        return ErrorResponse.response(HttpStatus.BAD_REQUEST, errors)
     }
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
-        List<String> errors = ex.getConstraintViolations().stream()
-                .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
-                .toList();
-
-        return ErrorResponse.response(HttpStatus.BAD_REQUEST, errors);
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidationExceptions(
+            ex: MethodArgumentNotValidException
+    ): ResponseEntity<ErrorResponse> {
+        val errors = ex.bindingResult.fieldErrors.map { "${it.field}: ${it.defaultMessage}" }
+        return ErrorResponse.response(HttpStatus.BAD_REQUEST, errors)
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleException(Exception ex) {
-        return ErrorResponse.response(HttpStatus.INTERNAL_SERVER_ERROR, ex);
-    }
+    @ExceptionHandler(SignatureException::class)
+    fun handleSignatureException(ex: SignatureException) =
+            ErrorResponse.response(HttpStatus.BAD_REQUEST, ex)
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        List<String> errors = new ArrayList<>();
-        ex.getBindingResult().getFieldErrors()
-                .forEach(error -> errors.add("%s: %s".formatted(error.getField(), error.getDefaultMessage())));
-        return ErrorResponse.response(HttpStatus.BAD_REQUEST, errors);
-    }
+    @ExceptionHandler(MalformedJwtException::class)
+    fun handleMalformedJwtException() =
+            ErrorResponse.response(HttpStatus.BAD_REQUEST, "Malformed JWT")
 
-    @ExceptionHandler(SignatureException.class)
-    public ResponseEntity<ErrorResponse> handleException(SignatureException ex) {
-        return ErrorResponse.response(HttpStatus.BAD_REQUEST, ex);
+    @ExceptionHandler(Exception::class)
+    fun handleGenericException(ex: Exception): ResponseEntity<ErrorResponse> {
+        log.error("Unexpected error occurred", ex)
+        return ErrorResponse.response(HttpStatus.INTERNAL_SERVER_ERROR, ex)
     }
-
-    @ExceptionHandler(MalformedJwtException.class)
-    public ResponseEntity<ErrorResponse> handleMalformedJwtException(MalformedJwtException ex) {
-        return ErrorResponse.response(HttpStatus.BAD_REQUEST, "Malformed JWT");
-    }
-
 }

@@ -1,76 +1,50 @@
-package com.ilogos.course.utils;
+package com.ilogos.course.utils
 
-import java.security.PublicKey;
-import java.util.Date;
-import java.util.UUID;
+import com.ilogos.course.user.IUser
+import io.jsonwebtoken.Claims
+import io.jsonwebtoken.Jwts
+import java.security.PublicKey
+import java.util.*
 
-import com.ilogos.course.user.IUser;
+class TokenInfo(private val token: String, publicKey: PublicKey) : IUser {
+    private val claims: Claims =
+            Jwts.parserBuilder().setSigningKey(publicKey).build().parseClaimsJws(token).getBody()
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import lombok.Getter;
-
-@Getter
-public class TokenInfo implements IUser {
-    private final Claims claims;
-    private final String token;
-
-    private enum Type {
+    enum class Type {
         ACCESS,
         REFRESH,
         UNDEFINED
     }
 
-    public TokenInfo(String token, PublicKey publicKey) {
-        this.token = token;
-        this.claims = Jwts.parserBuilder()
-                .setSigningKey(publicKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
+    val isExpired: Boolean
+        get() = claims.expiration.before(Date())
 
-    public boolean isExpired() {
-        return claims.getExpiration().before(new Date());
-    }
+    val type: Type
+        get() {
+            val type = claims["type", String::class.java]
 
-    public Type getType() {
-        String type = claims.get("type", String.class);
-        if (type == null) {
-            return Type.UNDEFINED;
+            return when (type) {
+                "access" -> Type.ACCESS
+                "refresh" -> Type.REFRESH
+                else -> Type.UNDEFINED
+            }
         }
 
-        return switch (type) {
-            case "access" -> Type.ACCESS;
-            case "refresh" -> Type.REFRESH;
-            default -> Type.UNDEFINED;
-        };
-    }
+    val isAccess: Boolean
+        get() = type == Type.ACCESS
 
-    public boolean isAccess() {
-        return Type.ACCESS.equals(getType());
-    }
+    val isRefresh: Boolean
+        get() = type == Type.REFRESH
 
-    public boolean isRefresh() {
-        return Type.REFRESH.equals(getType());
-    }
+    val issuedAt: Date
+        get() = claims.issuedAt
 
-    public Date getIssuedAt() {
-        return claims.getIssuedAt();
-    }
+    override val email: String
+        get() = claims["email", String::class.java]!!
 
-    @Override
-    public String getEmail() {
-        return claims.get("email", String.class);
-    }
+    override val id: UUID
+        get() = UUID.fromString(claims.subject)
 
-    @Override
-    public UUID getId() {
-        return UUID.fromString(claims.getSubject());
-    }
-
-    @Override
-    public String getUsername() {
-        return claims.get("username", String.class);
-    }
+    override val username: String
+        get() = claims["username", String::class.java]!!
 }

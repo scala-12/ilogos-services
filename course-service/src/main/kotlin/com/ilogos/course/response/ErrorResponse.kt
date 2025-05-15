@@ -1,29 +1,27 @@
-package com.ilogos.course.response;
+package com.ilogos.course.response
 
-import java.util.List;
+import io.swagger.v3.oas.annotations.media.Schema
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+class ErrorResponse(
+        @Schema(description = "Errors list", example = "[\"Invalid credentials\"]")
+        val errors: List<String> = emptyList()
+) : AbstractResponse() {
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+    companion object {
 
-@Getter
-@AllArgsConstructor
-public class ErrorResponse extends AbstractResponse {
-    @Schema(description = "Errors list", example = "[\"Invalid credentials\"]")
-    private List<String> errors = null;
+        fun response(status: HttpStatus, errors: List<String>): ResponseEntity<ErrorResponse> {
+            return ResponseEntity.status(status).body(ErrorResponse(errors))
+        }
 
-    public static ResponseEntity<ErrorResponse> response(HttpStatus status, List<String> errors) {
-        return ResponseEntity.status(status).body(new ErrorResponse(errors));
-    }
+        fun response(status: HttpStatus, error: String?): ResponseEntity<ErrorResponse> {
+            val errorList = if (error != null) listOf(error) else emptyList()
+            return response(status, errorList)
+        }
 
-    public static ResponseEntity<ErrorResponse> response(HttpStatus status, String error) {
-        return ErrorResponse.response(status, error != null ? List.of(error) : List.of());
-    }
-
-    public static ResponseEntity<ErrorResponse> response(HttpStatus status, Exception ex) {
-        return ErrorResponse.response(status, ex.getMessage());
+        fun response(status: HttpStatus, ex: Exception): ResponseEntity<ErrorResponse> {
+            return response(status, ex.message)
+        }
     }
 }

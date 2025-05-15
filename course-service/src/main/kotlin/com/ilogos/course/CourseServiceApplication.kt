@@ -1,13 +1,11 @@
-package com.ilogos.course;
+package com.ilogos.course
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.runApplication
 
 @SpringBootApplication
-public class CourseServiceApplication {
+class CourseServiceApplication
 
-	public static void main(String[] args) {
-		SpringApplication.run(CourseServiceApplication.class, args);
-	}
-
+fun main(args: Array<String>) {
+	runApplication<CourseServiceApplication>(*args)
 }

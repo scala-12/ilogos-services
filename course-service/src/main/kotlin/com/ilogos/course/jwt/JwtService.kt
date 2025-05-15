@@ -1,89 +1,83 @@
-package com.ilogos.course.jwt;
+package com.ilogos.course.jwt
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
-import java.util.Optional;
+import com.ilogos.course.exception.ExceptionWithStatus
+import com.ilogos.course.utils.TokenInfo
+import jakarta.annotation.PostConstruct
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Path
+import java.security.KeyFactory
+import java.security.PublicKey
+import java.security.interfaces.RSAPublicKey
+import java.security.spec.X509EncodedKeySpec
+import java.util.*
+import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Profile
+import org.springframework.http.HttpStatus
+import org.springframework.security.oauth2.jwt.JwtDecoder
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
+import org.springframework.stereotype.Service
 
-import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.stereotype.Service;
-
-import com.ilogos.course.exception.ExceptionWithStatus;
-import com.ilogos.course.utils.TokenInfo;
-
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
-@RequiredArgsConstructor
 @Service
-public class JwtService {
+class JwtService(private val _jwtConfig: JwtConfig?) {
 
-    private final JwtConfig jwtConfig;
+    lateinit private var publicKey: PublicKey
 
-    private PublicKey publicKey;
+    val jwtConfig: JwtConfig
+        get() = _jwtConfig ?: throw IllegalStateException("Jwt-service has not been initialized")
 
-    @Profile("test")
-    public static JwtService create(PublicKey publicKey) {
-        var self = new JwtService(null);
-        self.init(publicKey);
+    companion object {
+        private val log = LoggerFactory.getLogger(JwtService::class.java)
 
-        return self;
+        @Profile("test")
+        fun create(publicKey: PublicKey): JwtService {
+            val service = JwtService(null)
+            service.publicKey = publicKey
+
+            return service
+        }
     }
 
-    private PublicKey loadKey() throws IOException {
-        String pem = Files.readString(Path.of(jwtConfig.getPublicKeyPath()));
+    @Throws(IOException::class)
+    private fun loadKey(): PublicKey {
+        val pem = Files.readString(Path.of(jwtConfig.publicPath))
+        if (pem.isBlank()) throw IllegalStateException("Private key is missing")
 
-        if (pem == null || pem.isBlank()) {
-            throw new IllegalStateException("Private key is missing");
-        }
-        String key = (pem.replace("-----BEGIN PUBLIC KEY-----", "")
-                .replace("-----END PUBLIC KEY-----", ""))
-                .replaceAll("\\s", "");
-        byte[] decoded = Base64.getDecoder().decode(key);
-        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decoded);
-        try {
-            KeyFactory factory = KeyFactory.getInstance("RSA");
-            return factory.generatePublic(keySpec);
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to load RSA key", e);
+        val key =
+                pem.replace("-----BEGIN PUBLIC KEY-----", "")
+                        .replace("-----END PUBLIC KEY-----", "")
+                        .replace("\\s".toRegex(), "")
+
+        val decoded = Base64.getDecoder().decode(key)
+        val keySpec = X509EncodedKeySpec(decoded)
+        return try {
+            KeyFactory.getInstance("RSA").generatePublic(keySpec)
+        } catch (e: Exception) {
+            throw RuntimeException("Unable to load RSA key", e)
         }
     }
 
     @PostConstruct
-    public void init() throws IOException {
-        if (this.jwtConfig != null) {
-            var publicKey = loadKey();
-            init(publicKey);
+    @Throws(IOException::class)
+    fun init() {
+        if (_jwtConfig != null) {
+            val key = loadKey()
+            publicKey = key
         }
     }
 
-    private void init(PublicKey publicKey) {
-        this.publicKey = publicKey;
-    }
-
-    public TokenInfo extractTokenInfoFromHeader(String header) {
-        var token = header.startsWith("Bearer ")
-                ? Optional.of(header.substring(7))
-                : Optional.<String>empty();
-        if (token.isEmpty()) {
-            log.info("Bearer token not setted");
-            throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, "Bearer token not setted");
+    fun extractTokenInfoFromHeader(header: String): TokenInfo {
+        val token = if (header.startsWith("Bearer ")) header.removePrefix("Bearer ").trim() else ""
+        if (token.isBlank()) {
+            log.info("Bearer token not setted")
+            throw ExceptionWithStatus(HttpStatus.UNAUTHORIZED, "Bearer token not setted")
         }
-        return new TokenInfo(token.get(), publicKey);
+
+        return TokenInfo(token, publicKey)
     }
 
-    public JwtDecoder buildJwtDecoder() {
-        return NimbusJwtDecoder.withPublicKey((RSAPublicKey) publicKey).build();
+    fun buildJwtDecoder(): JwtDecoder {
+        val key = publicKey as RSAPublicKey
+        return NimbusJwtDecoder.withPublicKey(key).build()
     }
-
 }

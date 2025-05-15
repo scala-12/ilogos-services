@@ -1,13 +1,13 @@
-package com.ilogos.course;
+package com.ilogos.course
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.Test
+import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
 class CourseServiceApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+  @Test
+  fun contextLoads() {
+  }
 
 }
