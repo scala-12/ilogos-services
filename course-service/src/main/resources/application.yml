@@ -1,0 +1,13 @@
+spring:
+  data.mongodb:
+    uri: ${COURSE_ILOGOS_DB_URI}
+    database: ${COURSE_ILOGOS_DB_NAME}
+server:
+  port: 8070
+jwt:
+  publicPath: ${ILOGOS_JWT_PUBLIC}
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
