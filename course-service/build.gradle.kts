@@ -20,10 +20,13 @@ java {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
+    implementation("com.ipoint:core:0.0.1-SNAPSHOT")
+
     // Spring Boot Starters
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-security")
