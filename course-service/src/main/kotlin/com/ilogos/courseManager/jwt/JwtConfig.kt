@@ -6,5 +6,5 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 @ConfigurationProperties(prefix = "jwt")
 class JwtConfig {
-    lateinit var publicPath: String
+    lateinit var publicKeyPath: String
 }

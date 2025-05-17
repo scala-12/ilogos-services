@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "jwt.public-key-path",
+      "type": "java.lang.String",
+      "description": "Path to public.pem file for JWT tokens"
+    }
+  ]
+}
