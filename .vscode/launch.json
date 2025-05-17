@@ -6,10 +6,10 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Security-service",
+            "name": "Auth-service",
             "request": "launch",
-            "mainClass": "com.ilogos.security.SecurityServiceApplication",
-            "projectName": "security-service"
+            "mainClass": "com.ilogos.auth.AuthServiceApplication",
+            "projectName": "auth-service"
         },
         {
             "type": "kotlin",
