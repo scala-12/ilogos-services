@@ -1,24 +1,24 @@
 {
   "properties": [
     {
-      "name": "jwt.secretPath",
+      "name": "jwt.secret-key-path",
       "type": "java.lang.String",
       "description": "Path to private.pem file for JWT tokens"
     },
     {
-      "name": "jwt.publicPath",
+      "name": "jwt.public-key-path",
       "type": "java.lang.String",
       "description": "Path to public.pem file for JWT tokens"
     },
     {
-      "name": "jwt.refreshTokenExpiration",
+      "name": "jwt.refresh-token-expiration-ms",
       "type": "java.lang.String",
-      "description": "Time of Life for refresh token"
+      "description": "Time of Life for refresh token in ms"
     },
     {
-      "name": "jwt.accessTokenExpiration",
+      "name": "jwt.access-token-expiration-ms",
       "type": "java.lang.String",
-      "description": "Time of Life for access token"
+      "description": "Time of Life for access token in ms"
     }
   ]
 }

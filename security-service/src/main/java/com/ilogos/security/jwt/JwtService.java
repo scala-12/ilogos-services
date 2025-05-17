@@ -8,6 +8,7 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -19,6 +20,12 @@ import java.util.Optional;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimValidator;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Service;
 
 import com.ilogos.security.exception.ExceptionWithStatus;
@@ -54,7 +61,7 @@ public class JwtService {
 
     private Key loadKey(boolean isPrivate) throws IOException {
         String pem = Files.readString(Path.of(isPrivate
-                ? jwtConfig.getPrivateKeyPath()
+                ? jwtConfig.getSecretKeyPath()
                 : jwtConfig.getPublicKeyPath()));
 
         if (pem == null || pem.isBlank()) {
@@ -90,8 +97,8 @@ public class JwtService {
     public void init() throws IOException {
         if (this.jwtConfig != null) {
             var keyPair = loadKeys();
-            init(keyPair, jwtConfig.getAccessTokenExpiration(),
-                    jwtConfig.getRefreshTokenExpiration());
+            init(keyPair, jwtConfig.getAccessTokenExpirationMs(),
+                    jwtConfig.getRefreshTokenExpirationMs());
         }
     }
 
@@ -138,6 +145,47 @@ public class JwtService {
                 .compact();
 
         return token;
+    }
+
+    public JwtDecoder buildJwtDecoder() {
+        var key = (RSAPublicKey) keyPair.getPublic();
+        var decoder = NimbusJwtDecoder.withPublicKey(key).build();
+
+        JwtClaimValidator<String> tokenTypeValidator = new JwtClaimValidator<>(TokenInfo.TYPE_CLAIM,
+                it -> {
+                    if (!TokenInfo.isAccessType(it)) {
+                        log.info("Attempt to gain access via refresh token");
+                        return false;
+                    }
+                    return true;
+                });
+
+        JwtClaimValidator<String> tokenUsernameValidator = new JwtClaimValidator<>(TokenInfo.USERNAME_CLAIM,
+                it -> {
+                    if (it == null || it.isBlank()) {
+                        log.info("Attempt to gain access via token without username (%s)".formatted(it));
+                        return false;
+                    }
+                    return true;
+                });
+
+        JwtClaimValidator<String> tokenEmailValidator = new JwtClaimValidator<>(TokenInfo.EMAIL_CLAIM,
+                it -> {
+                    if (it == null || !it.contains("@")) {
+                        log.info("Attempt to gain access via token with incorrect email (%s)".formatted(it));
+                        return false;
+                    }
+                    return true;
+                });
+
+        OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(
+                tokenTypeValidator,
+                tokenUsernameValidator,
+                tokenEmailValidator);
+
+        decoder.setJwtValidator(validator);
+
+        return decoder;
     }
 
 }

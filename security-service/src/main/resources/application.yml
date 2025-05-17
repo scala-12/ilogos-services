@@ -17,10 +17,10 @@ spring:
 server:
   port: 8090
 jwt:
-  secretPath: ${ILOGOS_JWT_PRIVATE}
-  publicPath: ${ILOGOS_JWT_PUBLIC}
-  accessTokenExpiration: 900000   # 15 minutes
-  refreshTokenExpiration: 604800000 # 7 days
+  secret-key-path: ${ILOGOS_JWT_PRIVATE}
+  public-key-path: ${ILOGOS_JWT_PUBLIC}
+  access-token-expiration-ms: 900000   # 15 minutes
+  refresh-token-expiration-ms: 604800000 # 7 days
 springdoc:
   api-docs:
     enabled: true

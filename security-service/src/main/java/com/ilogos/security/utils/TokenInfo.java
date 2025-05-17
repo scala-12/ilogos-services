@@ -4,83 +4,83 @@ import java.security.PublicKey;
 import java.util.Date;
 import java.util.UUID;
 
+import org.springframework.security.oauth2.jwt.Jwt;
+
 import com.ilogos.security.user.model.IUser;
 import com.ilogos.security.user.model.IUserBase;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.Getter;
 
 @Getter
 public class TokenInfo implements IUserBase {
-    private final Claims claims;
-    private final String token;
+    public final static String USERNAME_CLAIM = "username";
+    public final static String EMAIL_CLAIM = "email";
+    public final static String TYPE_CLAIM = "type";
 
-    private enum Type {
-        ACCESS,
-        REFRESH,
-        UNDEFINED
-    }
+    public final static String ACCESS_TYPE = "access";
+    public final static String REFRESH_TYPE = "refresh";
+
+    private final String token;
+    private final Date expiration;
+    private final String username;
+    private final UUID id;
+    private final String email;
+    private final Date issuedAt;
+    private final String type;
 
     public TokenInfo(String token, PublicKey publicKey) {
         this.token = token;
-        this.claims = Jwts.parserBuilder()
+        var claims = Jwts.parserBuilder()
                 .setSigningKey(publicKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+        expiration = claims.getExpiration();
+        username = claims.get(USERNAME_CLAIM, String.class);
+        id = UUID.fromString(claims.getSubject());
+        email = claims.get(EMAIL_CLAIM, String.class);
+        issuedAt = claims.getIssuedAt();
+        type = claims.get(TYPE_CLAIM, String.class);
+    }
+
+    public TokenInfo(Jwt jwt) {
+        token = jwt.getTokenValue();
+
+        expiration = Date.from(jwt.getExpiresAt());
+        username = jwt.getClaimAsString(USERNAME_CLAIM);
+        id = UUID.fromString(jwt.getSubject());
+        email = jwt.getClaimAsString(EMAIL_CLAIM);
+        issuedAt = Date.from(jwt.getIssuedAt());
+        type = jwt.getClaimAsString(TYPE_CLAIM);
     }
 
     public boolean isExpired() {
-        return claims.getExpiration().before(new Date());
+        return expiration.before(new Date());
     }
 
     public boolean isValid(IUser user, boolean checkIat) {
-        return user != null && user.getUsername().equals(getUsername()) && !isExpired()
-                && (!checkIat || !getIssuedAt().toInstant().isBefore(user.getLastTokenIssuedAt()));
+        return user != null && user.getUsername().equals(username) && !isExpired()
+                && (!checkIat || !issuedAt.toInstant().isBefore(user.getLastTokenIssuedAt()));
     }
 
     public boolean isValid(IUser user) {
         return isValid(user, true);
     }
 
-    public Type getType() {
-        String type = claims.get("type", String.class);
-        if (type == null) {
-            return Type.UNDEFINED;
-        }
-
-        return switch (type) {
-            case "access" -> Type.ACCESS;
-            case "refresh" -> Type.REFRESH;
-            default -> Type.UNDEFINED;
-        };
+    public static boolean isAccessType(String type) {
+        return ACCESS_TYPE.equals(type);
     }
 
-    public boolean isAccess() {
-        return Type.ACCESS.equals(getType());
+    public boolean isAccessToken() {
+        return isAccessType(type);
     }
 
-    public boolean isRefresh() {
-        return Type.REFRESH.equals(getType());
+    public static boolean isRefreshType(String type) {
+        return REFRESH_TYPE.equals(type);
     }
 
-    public Date getIssuedAt() {
-        return claims.getIssuedAt();
-    }
-
-    @Override
-    public String getEmail() {
-        return claims.get("email", String.class);
-    }
-
-    @Override
-    public UUID getId() {
-        return UUID.fromString(claims.getSubject());
-    }
-
-    @Override
-    public String getUsername() {
-        return claims.get("username", String.class);
+    public boolean isRefreshToken() {
+        return isRefreshType(type);
     }
 }
