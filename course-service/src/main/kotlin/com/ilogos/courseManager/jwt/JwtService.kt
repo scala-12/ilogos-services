@@ -1,7 +1,7 @@
-package com.ilogos.course.jwt
+package com.ilogos.courseManager.jwt
 
-import com.ilogos.course.exception.ExceptionWithStatus
-import com.ilogos.course.utils.TokenInfo
+import com.ilogos.courseManager.exception.ExceptionWithStatus
+import com.ilogos.courseManager.utils.TokenInfo
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile

@@ -1,6 +1,6 @@
-package com.ilogos.course.utils
+package com.ilogos.courseManager.utils
 
-import com.ilogos.course.user.IUser
+import com.ilogos.courseManager.user.IUser
 import io.jsonwebtoken.Jwts
 import org.springframework.security.oauth2.jwt.Jwt
 import java.security.PublicKey

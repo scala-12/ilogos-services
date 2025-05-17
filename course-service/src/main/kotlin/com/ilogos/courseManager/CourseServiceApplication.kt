@@ -1,4 +1,4 @@
-package com.ilogos.course
+package com.ilogos.courseManager
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

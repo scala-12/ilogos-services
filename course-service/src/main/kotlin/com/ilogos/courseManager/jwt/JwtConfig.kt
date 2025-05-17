@@ -1,4 +1,4 @@
-package com.ilogos.course.jwt
+package com.ilogos.courseManager.jwt
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration

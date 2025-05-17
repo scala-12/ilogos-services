@@ -1,4 +1,4 @@
-package com.ilogos.course.response
+package com.ilogos.courseManager.response
 
 import java.time.LocalDateTime
 

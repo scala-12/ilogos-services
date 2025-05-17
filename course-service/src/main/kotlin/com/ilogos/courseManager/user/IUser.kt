@@ -1,4 +1,4 @@
-package com.ilogos.course.user
+package com.ilogos.courseManager.user
 
 import java.util.*
 

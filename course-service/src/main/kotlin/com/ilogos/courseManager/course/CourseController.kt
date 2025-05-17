@@ -1,6 +1,6 @@
-package com.ilogos.course.course
+package com.ilogos.courseManager.course
 
-import com.ilogos.course.exception.ExceptionWithStatus
+import com.ilogos.courseManager.exception.ExceptionWithStatus
 import com.ipoint.coursegenerator.core.Parser
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content

@@ -1,4 +1,4 @@
-package com.ilogos.course.response
+package com.ilogos.courseManager.response
 
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus

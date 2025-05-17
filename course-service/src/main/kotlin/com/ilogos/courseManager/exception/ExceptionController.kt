@@ -1,6 +1,6 @@
-package com.ilogos.course.exception
+package com.ilogos.courseManager.exception
 
-import com.ilogos.course.response.ErrorResponse
+import com.ilogos.courseManager.response.ErrorResponse
 import io.jsonwebtoken.MalformedJwtException
 import io.jsonwebtoken.security.SignatureException
 import jakarta.validation.ConstraintViolationException

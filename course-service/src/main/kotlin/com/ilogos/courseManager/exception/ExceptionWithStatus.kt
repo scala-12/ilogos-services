@@ -1,4 +1,4 @@
-package com.ilogos.course.exception
+package com.ilogos.courseManager.exception
 
 import org.springframework.http.HttpStatus
 
