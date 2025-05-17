@@ -54,7 +54,7 @@ public class JwtService {
 
     private Key loadKey(boolean isPrivate) throws IOException {
         String pem = Files.readString(Path.of(isPrivate
-                ? jwtConfig.getPrivateKeyPath()
+                ? jwtConfig.getSecretKeyPath()
                 : jwtConfig.getPublicKeyPath()));
 
         if (pem == null || pem.isBlank()) {
@@ -90,8 +90,8 @@ public class JwtService {
     public void init() throws IOException {
         if (this.jwtConfig != null) {
             var keyPair = loadKeys();
-            init(keyPair, jwtConfig.getAccessTokenExpiration(),
-                    jwtConfig.getRefreshTokenExpiration());
+            init(keyPair, jwtConfig.getAccessTokenExpirationMs(),
+                    jwtConfig.getRefreshTokenExpirationMs());
         }
     }
 

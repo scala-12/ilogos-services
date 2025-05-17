@@ -1,24 +1,22 @@
 package com.ilogos.security.jwt;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 @Configuration
+@ConfigurationProperties(prefix = "jwt")
 public class JwtConfig {
 
-    @Value("${jwt.secretPath}")
-    private String privateKeyPath;
-
-    @Value("${jwt.publicPath}")
+    private String secretKeyPath;
     private String publicKeyPath;
+    private long accessTokenExpirationMs;
+    private long refreshTokenExpirationMs;
 
-    @Value("${jwt.accessTokenExpiration}")
-    private long accessTokenExpiration;
-
-    @Value("${jwt.refreshTokenExpiration}")
-    private long refreshTokenExpiration;
+    public long getRefreshTokenExpiration() {
+        return refreshTokenExpirationMs / 1_000;
+    }
 
 }
