@@ -23,7 +23,7 @@ class JwtAuthenticationFilter(
 
         val tokenInfo = jwtService.getTokenInfo(authHeader.substring(7))
 
-        if (!tokenInfo.isAccess) {
+        if (!tokenInfo.isAccessToken) {
             SecurityContextHolder.clearContext()
         }
         filterChain.doFilter(request, response)
