@@ -43,7 +43,7 @@ class JwtService(private val _jwtConfig: JwtConfig?) {
 
     @Throws(IOException::class)
     private fun loadKey(): RSAPublicKey {
-        val pem = Files.readString(Path.of(jwtConfig.publicPath))
+        val pem = Files.readString(Path.of(jwtConfig.publicKeyPath))
         if (pem.isBlank()) throw IllegalStateException("Private key is missing")
 
         val key = pem.replace("-----BEGIN PUBLIC KEY-----", "").replace("-----END PUBLIC KEY-----", "")
