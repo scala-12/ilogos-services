@@ -80,7 +80,7 @@ public class UserService {
     public Optional<TokensData> assignRefreshToken(TokenInfo tokenInfo, Function<User, TokensData> generator) {
         User user = userRepository.findById(tokenInfo.getId())
                 .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED));
-        if (tokenInfo.isRefresh() && tokenInfo.isValid(user, false)) {
+        if (tokenInfo.isRefreshToken() && tokenInfo.isValid(user, false)) {
             String username = tokenInfo.getUsername();
 
             var tokens = generator.apply(user);

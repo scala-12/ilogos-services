@@ -18,6 +18,9 @@ public class TokenInfo implements IUserBase {
     public final static String EMAIL_CLAIM = "email";
     public final static String TYPE_CLAIM = "type";
 
+    public final static String ACCESS_TYPE = "access";
+    public final static String REFRESH_TYPE = "refresh";
+
     private final String token;
     private final Date expiration;
     private final String username;
@@ -25,12 +28,6 @@ public class TokenInfo implements IUserBase {
     private final String email;
     private final Date issuedAt;
     private final String type;
-
-    private enum Type {
-        ACCESS,
-        REFRESH,
-        UNDEFINED
-    }
 
     public TokenInfo(String token, PublicKey publicKey) {
         this.token = token;
@@ -67,35 +64,23 @@ public class TokenInfo implements IUserBase {
                 && (!checkIat || !issuedAt.toInstant().isBefore(user.getLastTokenIssuedAt()));
     }
 
-    public static boolean isAccessType(String type) {
-        return Type.ACCESS.equals(getType(type));
-    }
-
     public boolean isValid(IUser user) {
         return isValid(user, true);
     }
 
-    private static Type getType(String type) {
-        if (type == null) {
-            return Type.UNDEFINED;
-        }
-
-        return switch (type) {
-            case "access" -> Type.ACCESS;
-            case "refresh" -> Type.REFRESH;
-            default -> Type.UNDEFINED;
-        };
+    public static boolean isAccessType(String type) {
+        return ACCESS_TYPE.equals(type);
     }
 
-    public Type getType() {
-        return getType(type);
+    public boolean isAccessToken() {
+        return isAccessType(type);
     }
 
-    public boolean isAccess() {
-        return Type.ACCESS.equals(getType());
+    public static boolean isRefreshType(String type) {
+        return REFRESH_TYPE.equals(type);
     }
 
-    public boolean isRefresh() {
-        return Type.REFRESH.equals(getType());
+    public boolean isRefreshToken() {
+        return isRefreshType(type);
     }
 }

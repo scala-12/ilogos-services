@@ -101,7 +101,7 @@ public class AuthController {
         } catch (ExpiredJwtException ex) {
             throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, ex);
         }
-        if (!tokenInfo.isRefresh()) {
+        if (!tokenInfo.isRefreshToken()) {
             throw new ExceptionWithStatus(HttpStatus.BAD_REQUEST,
                     "Used access-token instead of refresh-token");
         }
@@ -132,7 +132,7 @@ public class AuthController {
         } catch (ExpiredJwtException ex) {
             throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, ex);
         }
-        if (!tokenInfo.isAccess()) {
+        if (!tokenInfo.isAccessToken()) {
             throw new ExceptionWithStatus(HttpStatus.BAD_REQUEST,
                     "Used refresh-token instead of access-token");
         }
