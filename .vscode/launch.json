@@ -5,9 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "Security-service",
+            "request": "launch",
+            "mainClass": "com.ilogos.security.SecurityServiceApplication",
+            "projectName": "security-service"
+        },
+        {
             "type": "kotlin",
             "request": "launch",
-            "name": "Course",
+            "name": "Course-service",
             "projectRoot": "${workspaceFolder}/course-service",
             "mainClass": "com.ilogos.course.CourseServiceApplicationKt"
         }
