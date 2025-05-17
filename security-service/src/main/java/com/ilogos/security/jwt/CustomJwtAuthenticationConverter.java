@@ -1,4 +1,4 @@
-package com.ilogos.security.user.jwt;
+package com.ilogos.security.jwt;
 
 import java.util.UUID;
 
@@ -9,6 +9,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
+
+import com.ilogos.security.user.jwt.JwtUserDetailsService;
 
 import lombok.RequiredArgsConstructor;
 

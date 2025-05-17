@@ -13,8 +13,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 
+import com.ilogos.security.jwt.CustomJwtAuthenticationConverter;
 import com.ilogos.security.jwt.JwtService;
-import com.ilogos.security.user.jwt.CustomJwtAuthenticationConverter;
 import com.ilogos.security.user.jwt.JwtUserDetailsService;
 
 import lombok.RequiredArgsConstructor;
@@ -48,7 +48,8 @@ public class SecurityConfig {
                         .permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(it -> it.jwt(jwt -> jwt
-                        .jwtAuthenticationConverter(new CustomJwtAuthenticationConverter(userDetailsService))));
+                        .jwtAuthenticationConverter(
+                                new CustomJwtAuthenticationConverter(userDetailsService))));
 
         return builder.build();
     }

@@ -164,6 +164,7 @@ public class JwtService {
                 it -> {
                     if (it == null || it.isBlank()) {
                         log.info("Attempt to gain access via token without username (%s)".formatted(it));
+                        return false;
                     }
                     return true;
                 });
@@ -172,6 +173,7 @@ public class JwtService {
                 it -> {
                     if (it == null || !it.contains("@")) {
                         log.info("Attempt to gain access via token with incorrect email (%s)".formatted(it));
+                        return false;
                     }
                     return true;
                 });
