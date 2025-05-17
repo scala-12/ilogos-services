@@ -1,7 +1,7 @@
 package com.ilogos.courseManager.jwt
 
+import com.ilogos.courseManager.common.TokenInfo
 import com.ilogos.courseManager.exception.ExceptionWithStatus
-import com.ilogos.courseManager.utils.TokenInfo
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -104,9 +104,7 @@ class JwtService(private val _jwtConfig: JwtConfig?) {
         }
 
         val validator = DelegatingOAuth2TokenValidator<Jwt>(
-            tokenTypeValidator,
-            tokenUsernameValidator,
-            tokenEmailValidator
+            tokenTypeValidator, tokenUsernameValidator, tokenEmailValidator
         )
 
         decoder.setJwtValidator(validator)

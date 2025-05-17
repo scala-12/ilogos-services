@@ -5,8 +5,8 @@ import java.time.Instant;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 
+import com.ilogos.auth.common.hibernate.CitextType;
 import com.ilogos.auth.user.User;
-import com.ilogos.auth.utils.hibernate.CitextType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

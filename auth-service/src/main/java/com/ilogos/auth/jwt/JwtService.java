@@ -28,10 +28,10 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Service;
 
+import com.ilogos.auth.common.TokenInfo;
 import com.ilogos.auth.exception.ExceptionWithStatus;
 import com.ilogos.auth.user.User;
 import com.ilogos.auth.user.model.RoleType;
-import com.ilogos.auth.utils.TokenInfo;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

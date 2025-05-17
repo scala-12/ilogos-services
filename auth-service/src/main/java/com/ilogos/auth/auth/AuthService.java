@@ -9,12 +9,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 
+import com.ilogos.auth.common.TokenInfo;
 import com.ilogos.auth.exception.ExceptionWithStatus;
 import com.ilogos.auth.jwt.JwtService;
 import com.ilogos.auth.user.User;
 import com.ilogos.auth.user.UserService;
 import com.ilogos.auth.user.UserService.TokensData;
-import com.ilogos.auth.utils.TokenInfo;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
