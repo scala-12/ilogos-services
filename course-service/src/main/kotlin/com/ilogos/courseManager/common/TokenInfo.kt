@@ -1,4 +1,4 @@
-package com.ilogos.courseManager.utils
+package com.ilogos.courseManager.common
 
 import com.ilogos.courseManager.user.IUser
 import io.jsonwebtoken.Jwts
