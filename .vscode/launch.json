@@ -16,7 +16,7 @@
             "request": "launch",
             "name": "Course-service",
             "projectRoot": "${workspaceFolder}/course-service",
-            "mainClass": "com.ilogos.course.CourseServiceApplicationKt"
+            "mainClass": "com.ilogos.courseManager.CourseManagerServiceApplicationKt"
         }
     ]
 }
