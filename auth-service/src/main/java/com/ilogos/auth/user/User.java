@@ -13,14 +13,14 @@ import org.hibernate.annotations.Type;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.ilogos.auth.common.TokenInfo;
+import com.ilogos.auth.common.hibernate.CitextType;
+import com.ilogos.auth.common.validation.annotation.ValidTimezone;
 import com.ilogos.auth.user.emailHistory.EmailHistory;
 import com.ilogos.auth.user.model.IUser;
 import com.ilogos.auth.user.model.RoleType;
 import com.ilogos.auth.user.usernameHistory.UsernameHistory;
 import com.ilogos.auth.user.validation.annotation.ValidUsername;
-import com.ilogos.auth.utils.TokenInfo;
-import com.ilogos.auth.utils.hibernate.CitextType;
-import com.ilogos.auth.utils.validation.annotation.ValidTimezone;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;

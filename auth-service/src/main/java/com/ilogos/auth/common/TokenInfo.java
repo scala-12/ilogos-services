@@ -1,4 +1,4 @@
-package com.ilogos.auth.utils;
+package com.ilogos.auth.common;
 
 import java.security.PublicKey;
 import java.util.Date;

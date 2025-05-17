@@ -8,6 +8,7 @@ import java.util.function.Function;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.ilogos.auth.common.TokenInfo;
 import com.ilogos.auth.exception.ExceptionWithStatus;
 import com.ilogos.auth.jwt.JwtService;
 import com.ilogos.auth.user.UserController.UpdateUserRequest;
@@ -16,7 +17,6 @@ import com.ilogos.auth.user.emailHistory.EmailHistoryRepository;
 import com.ilogos.auth.user.model.RoleType;
 import com.ilogos.auth.user.usernameHistory.UsernameHistory;
 import com.ilogos.auth.user.usernameHistory.UsernameHistoryRepository;
-import com.ilogos.auth.utils.TokenInfo;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ilogos.auth.common.TokenInfo;
+import com.ilogos.auth.common.validation.annotation.ValidTimezone;
 import com.ilogos.auth.exception.ExceptionWithStatus;
 import com.ilogos.auth.jwt.JwtService;
 import com.ilogos.auth.response.ErrorResponse;
 import com.ilogos.auth.response.SuccessResponse;
 import com.ilogos.auth.user.model.RoleType;
 import com.ilogos.auth.user.model.UserDTO;
-import com.ilogos.auth.utils.TokenInfo;
-import com.ilogos.auth.utils.validation.annotation.ValidTimezone;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.v3.oas.annotations.Operation;
