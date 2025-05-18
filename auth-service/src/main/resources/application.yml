@@ -14,8 +14,6 @@ spring:
     schemas: public
     baseline-on-migrate: true
     baseline-version: 0
-server:
-  port: 8090
 jwt:
   secret-key-path: ${ILOGOS_JWT_PRIVATE}
   public-key-path: ${ILOGOS_JWT_PUBLIC}
