@@ -30,12 +30,9 @@ out/
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
-/dist/
+dist/
 /nbdist/
 /.nb-gradle/
-
-### VS Code ###
-.vscode/
 
 # editors
 .DS_Store
