@@ -1,7 +1,7 @@
 spring:
   data.mongodb:
     uri: ${COURSE_ILOGOS_DB_URI}
-    database: ${COURSE_ILOGOS_DB_NAME
+    database: ${COURSE_ILOGOS_DB_NAME}
 jwt:
   public-key-path: ${ILOGOS_JWT_PUBLIC}
 springdoc:
