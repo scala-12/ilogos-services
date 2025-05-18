@@ -38,3 +38,7 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### node projects ###
+node_modules
+.env
