@@ -9,14 +9,16 @@
             "name": "Auth-service",
             "request": "launch",
             "mainClass": "com.ilogos.auth.AuthServiceApplication",
-            "projectName": "auth-service"
+            "projectName": "auth-service",
+            "vmArgs": "-Dspring.profiles.active=local,tmp"
         },
         {
             "type": "kotlin",
             "request": "launch",
             "name": "Course-service",
             "projectRoot": "${workspaceFolder}/course-service",
-            "mainClass": "com.ilogos.courseManager.CourseManagerServiceApplicationKt"
+            "mainClass": "com.ilogos.courseManager.CourseManagerServiceApplicationKt",
+            "vmArgs": "-Dspring.profiles.active=local,tmp"
         }
     ]
 }
