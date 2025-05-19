@@ -11,7 +11,7 @@
     "start": "node build/app.js",
     "test": "node --test test/**/*.test.js",
     "dev": "fastify start -w -l info -P app.ts",
-    "debug": "node --inspect -r tsconfig-paths/register -r ts-node/register app.ts"
+    "debug": "node --inspect -r tsx app.ts"
   },
   "keywords": [],
   "author": "",
@@ -35,6 +35,7 @@
     "@types/node": "^22.15.19",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   }
 }

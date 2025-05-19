@@ -1,4 +1,3 @@
-/// <reference path="types/fastify-extends.d.ts" />
 import autoLoad from '@fastify/autoload';
 import dotenv from 'dotenv';
 import fastify from 'fastify';
