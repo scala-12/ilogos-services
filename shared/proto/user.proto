@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package user;
+
+service UserService {
+  rpc FindUserByEmailOrUsername(UserEmailOrUsernameRequest) returns (UserInfoResponse);
+}
+
+message UserEmailOrUsernameRequest {
+  string usernameOrEmail = 1;
+}
+
+message UserInfoResponse {
+  string id = 1;
+  string email = 2;
+  string username = 3;
+  repeated string roles = 4;
+  string password = 5;
+}
