@@ -13,8 +13,8 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Auth Service API")
+                        .title("User Service API")
                         .version("1.0")
-                        .description("Documentation for iLogos authorization service"));
+                        .description("Documentation for iLogos user managment service"));
     }
 }
