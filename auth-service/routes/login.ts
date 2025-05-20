@@ -1,10 +1,11 @@
+import { UserInfoResponse } from '@/generated/user';
 import { prepareString } from '@/utils';
 import { createUnauthorizedError } from '@/utils/exceptions';
 import { Static, Type } from '@sinclair/typebox';
 import bcrypt from 'bcrypt';
 import { FastifyInstance } from 'fastify';
 
-export const AuthForm = Type.Object({
+const AuthForm = Type.Object({
   username: Type.Optional(Type.String()),
   email: Type.Optional(Type.String({ format: 'email' })),
   password: Type.String({ minLength: 6 })
@@ -29,18 +30,17 @@ export default async function (fastify: FastifyInstance) {
       throw createUnauthorizedError('Username not provided');
     }
 
-    let invalidCredential = false;
-    const user = {} as any;
-    // const user = await fastify.redis.hgetall(`user:${usernameOrEmail}`);
-    if (!user?.passwordHash) {
-      invalidCredential = true;
-    } else {
-      const passwordValid = await bcrypt.compare(password, user.passwordHash);
-      if (!passwordValid) {
-        invalidCredential = true;
-      }
-    }
-    if (invalidCredential) {
+    const user = await new Promise<UserInfoResponse>((resolve, reject) => {
+      fastify.userGrpc.findUserByEmailOrUsername({ usernameOrEmail }, (error, response) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(response);
+      });
+    });
+
+    const passwordValid = await bcrypt.compare(password, user.password);
+    if (!passwordValid) {
       throw createUnauthorizedError('Invalid credential');
     }
 
