@@ -2,6 +2,9 @@ package com.ilogos.user.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.grpc.server.GlobalServerInterceptor;
+import org.springframework.grpc.server.security.AuthenticationProcessInterceptor;
+import org.springframework.grpc.server.security.GrpcSecurity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -62,6 +65,14 @@ public class SecurityConfig {
     @Bean
     public JwtDecoder jwtDecoder() {
         return jwtService.buildJwtDecoder();
+    }
+
+    @Bean
+    @GlobalServerInterceptor
+    AuthenticationProcessInterceptor grpcSecurityConfigurer(GrpcSecurity grpc) throws Exception {
+        return grpc.authorizeRequests(authorize -> authorize
+                .methods("user.UserService/FindUserByEmailOrUsername").permitAll()
+                .allRequests().authenticated()).build();
     }
 
 }

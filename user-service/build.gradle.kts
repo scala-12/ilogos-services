@@ -1,7 +1,10 @@
+import com.google.protobuf.gradle.id
+
 plugins {
     java
     id("org.springframework.boot") version "3.4.5"
     id("io.spring.dependency-management") version "1.1.7"
+    id("com.google.protobuf") version "0.9.4"
 }
 
 group = "com.ilogos"
@@ -9,6 +12,7 @@ version = "0.0.1-SNAPSHOT"
 
 val jjwtVersion = "0.11.5"
 val springdocVersion = "2.8.8"
+val springGrpcVersion = "0.8.0"
 
 java {
     toolchain {
@@ -25,6 +29,8 @@ configurations {
 repositories {
     mavenCentral()
 }
+
+extra["springGrpcVersion"] = springGrpcVersion
 
 dependencies {
     // Spring Boot Starters
@@ -52,10 +58,51 @@ dependencies {
     // Swagger/OpenAPI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
 
+    // gRPC
+    implementation("io.grpc:grpc-services")
+    implementation("org.springframework.grpc:spring-grpc-spring-boot-starter")
+
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.springframework.grpc:spring-grpc-test")
+}
+
+dependencyManagement {
+  imports {
+    mavenBom("org.springframework.grpc:spring-grpc-dependencies:$springGrpcVersion")
+  }
+}
+
+protobuf {
+  protoc {
+    artifact = "com.google.protobuf:protoc"
+  }
+  plugins {
+    id("grpc") {
+      artifact = "io.grpc:protoc-gen-grpc-java"
+    }
+  }
+  generateProtoTasks {
+    all().forEach {
+      it.plugins {
+        id("grpc") {
+          option("jakarta_omit")
+          option("@generated=omit")
+        }
+      }
+    }
+  }
+}
+
+// custom path to proto
+sourceSets {
+    main {
+        proto {
+            srcDir("../shared/proto")
+        }
+    }
 }
 
 tasks.withType<Test> {
