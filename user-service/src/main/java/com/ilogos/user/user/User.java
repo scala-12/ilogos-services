@@ -15,9 +15,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.ilogos.user.common.TokenInfo;
 import com.ilogos.user.common.hibernate.CitextType;
+import com.ilogos.user.common.model.IWithEmailHistory;
+import com.ilogos.user.common.model.IWithPassword;
+import com.ilogos.user.common.model.IWithRoleNames;
+import com.ilogos.user.common.model.IWithRoles;
+import com.ilogos.user.common.model.IWithUsernameHistory;
 import com.ilogos.user.common.validation.annotation.ValidTimezone;
 import com.ilogos.user.user.emailHistory.EmailHistory;
-import com.ilogos.user.user.model.IUser;
+import com.ilogos.user.user.model.IUserBase;
 import com.ilogos.user.user.model.RoleType;
 import com.ilogos.user.user.usernameHistory.UsernameHistory;
 import com.ilogos.user.user.validation.annotation.ValidUsername;
@@ -56,7 +61,12 @@ import lombok.Singular;
 @NoArgsConstructor
 @Builder
 @Table(name = "app_user")
-public class User implements IUser {
+public class User implements IUserBase,
+        IWithRoleNames,
+        IWithRoles,
+        IWithPassword,
+        IWithEmailHistory,
+        IWithUsernameHistory {
 
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -329,7 +339,8 @@ public class User implements IUser {
         return changedFields.contains(Field.EMAIL);
     }
 
-    public Set<String> getRolesNames() {
+    @Override
+    public Set<String> getRoleNames() {
         return roles.stream().map(RoleType::name).collect(Collectors.toSet());
     }
 

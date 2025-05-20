@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import com.ilogos.user.user.model.IUser;
 import com.ilogos.user.user.model.IUserBase;
 
 import io.jsonwebtoken.Jwts;
@@ -59,13 +58,8 @@ public class TokenInfo implements IUserBase {
         return expiration.before(new Date());
     }
 
-    public boolean isValid(IUser user, boolean checkIat) {
-        return user != null && user.getUsername().equals(username) && !isExpired()
-                && (!checkIat || !issuedAt.toInstant().isBefore(user.getLastTokenIssuedAt()));
-    }
-
-    public boolean isValid(IUser user) {
-        return isValid(user, true);
+    public boolean isValid(IUserBase user) {
+        return user != null && user.getUsername().equals(username) && !isExpired();
     }
 
     public static boolean isAccessType(String type) {

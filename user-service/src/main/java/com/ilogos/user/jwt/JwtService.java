@@ -31,7 +31,6 @@ import org.springframework.stereotype.Service;
 import com.ilogos.user.common.TokenInfo;
 import com.ilogos.user.exception.ExceptionWithStatus;
 import com.ilogos.user.user.User;
-import com.ilogos.user.user.model.RoleType;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -130,7 +129,7 @@ public class JwtService {
         long expirationMs = isAccess ? accessTokenExpiration : refreshTokenExpiration;
 
         Map<String, Object> claims = new HashMap<>(isAccess
-                ? Map.of("roles", user.getRoles().stream().map(RoleType::name).toList())
+                ? Map.of("roles", user.getRoleNames())
                 : Map.of());
         claims.put("username", user.getUsername());
         claims.put("email", user.getEmail());

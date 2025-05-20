@@ -6,28 +6,28 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.ilogos.user.user.model.UserProjection;
+import com.ilogos.user.common.model.IWithEmailHistory;
+import com.ilogos.user.common.model.IWithUsernameHistory;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
-    Optional<UserProjection> findUserByUsername(String username);
+
+    <T> Optional<T> findUserById(UUID id, Class<T> type);
+
+    <T> Optional<T> findByEmail(String email, Class<T> type);
+
+    <T> Optional<T> findByUsername(String username, Class<T> type);
+
+    <T> Optional<T> findByEmailOrUsername(String email, String username, Class<T> type);
 
     @EntityGraph(attributePaths = "usernameHistory")
-    Optional<User> findWithUsernameHistoryByUsername(String username);
-
-    @EntityGraph(attributePaths = "emailHistory")
-    Optional<User> findWithEmailHistoryByUsername(String username);
-
-    Optional<UserProjection> findUserByEmail(String email);
+    <T extends IWithUsernameHistory> Optional<T> findWithUsernameHistoryByUsername(String username, Class<T> type);
 
     @EntityGraph(attributePaths = "usernameHistory")
-    Optional<User> findWithUsernameHistoryByEmail(String email);
+    <T extends IWithUsernameHistory> Optional<T> findWithUsernameHistoryByEmail(String email, Class<T> type);
 
     @EntityGraph(attributePaths = "emailHistory")
-    Optional<User> findWithEmailHistoryByEmail(String email);
+    <T extends IWithEmailHistory> Optional<T> findWithEmailHistoryByUsername(String username, Class<T> type);
 
-    Optional<User> findByEmailOrUsername(String email, String username);
-
-    Optional<UserProjection> findUserByEmailOrUsername(String email, String username);
-
-    Optional<UserProjection> findUserById(UUID id);
+    @EntityGraph(attributePaths = "emailHistory")
+    <T extends IWithEmailHistory> Optional<T> findWithEmailHistoryByEmail(String email, Class<T> type);
 }

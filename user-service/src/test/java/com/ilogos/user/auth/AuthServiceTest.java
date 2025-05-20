@@ -61,7 +61,7 @@ class AuthServiceTest {
 
         var tokenInfo = jwtService.getTokenInfo(token);
         assertEquals(user.getUsername(), tokenInfo.getUsername());
-        assertTrue(tokenInfo.isValid(user, false));
+        assertTrue(tokenInfo.isValid(user));
     }
 
     @Test
@@ -69,6 +69,6 @@ class AuthServiceTest {
         var user = createUser();
         String token = jwtService.generateToken(user, true);
 
-        assertTrue(jwtService.getTokenInfo(token).isValid(user, false));
+        assertTrue(jwtService.getTokenInfo(token).isValid(user));
     }
 }

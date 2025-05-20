@@ -67,7 +67,7 @@ public class UserService {
             String usernameOrEmail,
             String password,
             Function<User, TokensData> generator) {
-        return userRepository.findByEmailOrUsername(usernameOrEmail, usernameOrEmail).map(user -> {
+        return userRepository.<User>findByEmailOrUsername(usernameOrEmail, usernameOrEmail, User.class).map(user -> {
             var tokens = generator.apply(user);
 
             user.setLastTokenIssuedAt(jwtService.getTokenInfo(tokens.accessToken), true);
@@ -80,7 +80,7 @@ public class UserService {
     public Optional<TokensData> assignRefreshToken(TokenInfo tokenInfo, Function<User, TokensData> generator) {
         User user = userRepository.findById(tokenInfo.getId())
                 .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED));
-        if (tokenInfo.isRefreshToken() && tokenInfo.isValid(user, false)) {
+        if (tokenInfo.isRefreshToken() && tokenInfo.isValid(user)) {
             String username = tokenInfo.getUsername();
 
             var tokens = generator.apply(user);

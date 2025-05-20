@@ -1,7 +1,6 @@
 package com.ilogos.user.user.jwt;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,7 +16,7 @@ public class JwtUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.copyOf(user.getRoles());
+        return user.getRoles();
     }
 
     @Override
