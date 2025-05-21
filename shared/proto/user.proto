@@ -4,10 +4,15 @@ package user;
 
 service UserService {
   rpc FindUserByEmailOrUsername(UserEmailOrUsernameRequest) returns (UserInfoResponse);
+  rpc FindUserById(UserIdRequest) returns (UserInfoResponse);
 }
 
 message UserEmailOrUsernameRequest {
   string usernameOrEmail = 1;
+}
+
+message UserIdRequest {
+  string id = 1;
 }
 
 message UserInfoResponse {

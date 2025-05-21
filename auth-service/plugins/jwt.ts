@@ -1,6 +1,6 @@
 import fp from 'fastify-plugin';
 import fs from 'fs/promises';
-import jwt, { PrivateKey, PublicKey, Secret, SignOptions } from 'jsonwebtoken';
+import jwt, { PrivateKey, PublicKey, Secret, SignOptions, TokenExpiredError } from 'jsonwebtoken';
 import path from 'path';
 
 interface IId {
@@ -14,6 +14,11 @@ interface IUser extends IId {
 
 type IUserInfo<Type extends boolean> = Type extends true ? IUser : IId;
 
+export enum TokenType {
+  ACCESS,
+  REFRESH,
+  UNDEFINED
+}
 export class JwtService {
   private _secretKey: Secret | PrivateKey;
   private _publicKey: PublicKey;
@@ -54,6 +59,38 @@ export class JwtService {
     }
 
     return jwt.sign(payload, this._secretKey, opts);
+  }
+
+  getTokenInfo = (token: string): { type: TokenType.UNDEFINED } | {
+    type: TokenType.ACCESS | TokenType.REFRESH;
+    id: string,
+    expired: boolean
+  } => {
+    let info;
+    let isExpired = false;
+    try {
+      info = jwt.verify(token, this._publicKey);
+    } catch (error) {
+      if (!(error instanceof TokenExpiredError)) {
+        throw error;
+      }
+      info = jwt.decode(token);
+      isExpired = true;
+    }
+
+    if (info && typeof info !== 'string') {
+      return {
+        type: info.type === 'refresh' ?
+          TokenType.REFRESH
+          : info.type === 'access' ?
+            TokenType.ACCESS
+            : TokenType.UNDEFINED,
+        id: info.sub || '',
+        expired: isExpired || info.exp == null || new Date(info.exp * 1000) <= new Date()
+      };
+    }
+
+    return { type: TokenType.UNDEFINED };
   }
 
   // const verifyJwt = (token: string): JwtPayload | null => {
