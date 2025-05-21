@@ -1,6 +1,7 @@
 import { UserInfoResponse } from '@/generated/user';
-import { clearJwtCookies, createMeta4ServiceRequest, prepareString, setJwtCookies } from '@/utils';
+import { prepareString } from '@/utils';
 import { createUnauthorizedError } from '@/utils/exceptions';
+import { clearJwtCookies, createMeta4ServiceRequest, setJwtCookies } from '@/utils/jwt-utils';
 import { Static, Type } from '@sinclair/typebox';
 import bcrypt from 'bcrypt';
 import { FastifyInstance } from 'fastify';
