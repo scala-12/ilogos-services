@@ -15,10 +15,7 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
 jwt:
-  secret-key-path: ${ILOGOS_JWT_PRIVATE}
   public-key-path: ${ILOGOS_JWT_PUBLIC}
-  access-token-expiration-ms: 900000   # 15 minutes
-  refresh-token-expiration-ms: 604800000 # 7 days
 springdoc:
   api-docs:
     enabled: true
