@@ -12,7 +12,7 @@ export default async function (fastify: FastifyInstance) {
     }
 
     const info = fastify.jwt.getTokenInfo(token);
-    if (info.type !== TokenType.REFRESH || !info.id) {
+    if (info.type !== TokenType.REFRESH || !info.hasPayload) {
       throw createBadRequiestError("Wrong token");
     }
     if (info.expired) {

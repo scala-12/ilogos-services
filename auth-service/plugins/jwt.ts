@@ -19,6 +19,24 @@ export enum TokenType {
   REFRESH,
   UNDEFINED
 }
+
+interface AccessTokenInfo<HasPayload extends boolean> {
+  type: TokenType.ACCESS;
+  expired: boolean;
+  id: HasPayload extends true ? string : undefined | string;
+  email: HasPayload extends true ? string : undefined | string;
+  username: HasPayload extends true ? string : undefined | string;
+  roles: HasPayload extends true ? string[] : undefined | string[];
+  hasPayload: HasPayload;
+}
+
+interface RefreshTokenInfo<HasPayload extends boolean> {
+  type: TokenType.REFRESH;
+  id: HasPayload extends true ? string : undefined | string;
+  expired: boolean;
+  hasPayload: HasPayload;
+}
+
 export class JwtService {
   private _secretKey: Secret | PrivateKey;
   private _publicKey: PublicKey;
@@ -61,11 +79,13 @@ export class JwtService {
     return jwt.sign(payload, this._secretKey, opts);
   }
 
-  getTokenInfo = (token: string): { type: TokenType.UNDEFINED } | {
-    type: TokenType.ACCESS | TokenType.REFRESH;
-    id: string,
-    expired: boolean
-  } => {
+  getTokenInfo = (token: string): (
+    { type: TokenType.UNDEFINED; expired?: boolean }
+    | RefreshTokenInfo<false>
+    | RefreshTokenInfo<true>
+    | AccessTokenInfo<false>
+    | AccessTokenInfo<true>
+  ) => {
     let info;
     let isExpired = false;
     try {
@@ -79,15 +99,25 @@ export class JwtService {
     }
 
     if (info && typeof info !== 'string') {
-      return {
-        type: info.type === 'refresh' ?
-          TokenType.REFRESH
-          : info.type === 'access' ?
-            TokenType.ACCESS
-            : TokenType.UNDEFINED,
-        id: info.sub || '',
-        expired: isExpired || info.exp == null || new Date(info.exp * 1000) <= new Date()
-      };
+      const expired = isExpired || info.exp == null || new Date(info.exp * 1_000) <= new Date();
+      const id = info.sub || '';
+      switch (info.type) {
+        case 'access':
+          const { username, email, roles } = info;
+          return {
+            expired, id, username, email, roles,
+            type: TokenType.ACCESS,
+            hasPayload: Boolean(id && username && email && roles)
+          };
+        case 'refresh':
+          return {
+            expired, id,
+            type: TokenType.REFRESH,
+            hasPayload: Boolean(id)
+          };
+        default:
+          return { type: TokenType.UNDEFINED, expired };
+      }
     }
 
     return { type: TokenType.UNDEFINED };
