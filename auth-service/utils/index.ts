@@ -1,4 +1,5 @@
 import { UserInfoResponse } from "@/generated/user";
+import { Metadata } from "@grpc/grpc-js";
 import { FastifyInstance, FastifyReply } from "fastify";
 
 export const prepareString = (...strings: unknown[]): string | null => {
@@ -40,4 +41,11 @@ export const setJwtCookies = (
         maxAge
       });
   }
+}
+
+export const createMeta4ServiceRequest = (fastify: FastifyInstance) => {
+  const metadata = new Metadata();
+  const requestJwt = fastify.jwt.sign(true, 'service');
+  metadata.add('authorization', `Bearer ${requestJwt}`)
+  return metadata;
 }

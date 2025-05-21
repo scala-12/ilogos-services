@@ -1,6 +1,6 @@
 import fp from 'fastify-plugin';
 import fs from 'fs/promises';
-import jwt, { PrivateKey, PublicKey, Secret } from 'jsonwebtoken';
+import jwt, { PrivateKey, PublicKey, Secret, SignOptions } from 'jsonwebtoken';
 import path from 'path';
 
 interface IId {
@@ -34,21 +34,26 @@ export class JwtService {
 
   sign = <Type extends boolean>(
     isAccessToken: Type,
-    user: IUserInfo<Type>,
+    user: IUserInfo<Type> | 'service',
   ): string => {
     const payload = {
-      id: user.id,
       type: isAccessToken ? 'access' : 'refresh',
     };
     if (isAccessToken) {
       const { username, roles, email } = user as IUser;
       Object.assign(payload, { username, roles, email });
     }
+    const opts: SignOptions = { algorithm: 'RS256' };
+    if (user === 'service') {
+      Object.assign(payload, { username: user, email: 'ilogos@ilogos.ru' });
+      opts.expiresIn = '1Minute';
+      opts.subject = user;
+    } else {
+      opts.expiresIn = isAccessToken ? this.accessExpires : this.refreshExpires;
+      opts.subject = user.id;
+    }
 
-    return jwt.sign(
-      payload,
-      this._secretKey,
-      { expiresIn: isAccessToken ? this.accessExpires : this.refreshExpires });
+    return jwt.sign(payload, this._secretKey, opts);
   }
 
   // const verifyJwt = (token: string): JwtPayload | null => {
@@ -62,18 +67,14 @@ export class JwtService {
 
 export default fp(async function (fastify) {
   console.debug("secret.pem read");
-  const secretKeyContent = await fs.readFile(
+  const secretKey = await fs.readFile(
     path.join(process.env.JWT_SECRET_KEY_PATH as string),
     'utf-8');
-  const secretKey = secretKeyContent.replace("-----BEGIN PRIVATE KEY-----", "")
-    .replace("-----END PRIVATE KEY-----", "").replaceAll(/\s+/g, '');
 
   console.debug("public.pem read");
-  const publicKeyContent = await fs.readFile(
+  const publicKey = await fs.readFile(
     path.join(process.env.JWT_PUBLIC_KEY_PATH as string),
     'utf-8');
-  const publicKey = secretKeyContent.replace("-----BEGIN PUBLIC KEY-----", "")
-    .replace("-----END PUBLIC KEY-----", "").replaceAll(/\s+/g, '');
 
   const jwtService = new JwtService(
     secretKey,

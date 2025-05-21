@@ -1,5 +1,5 @@
 import { UserInfoResponse } from '@/generated/user';
-import { prepareString, setJwtCookies } from '@/utils';
+import { createMeta4ServiceRequest, prepareString, setJwtCookies } from '@/utils';
 import { createUnauthorizedError } from '@/utils/exceptions';
 import { Static, Type } from '@sinclair/typebox';
 import bcrypt from 'bcrypt';
@@ -30,8 +30,9 @@ export default async function (fastify: FastifyInstance) {
       throw createUnauthorizedError('Username not provided');
     }
 
+    const metadata = createMeta4ServiceRequest(fastify);
     const user = await new Promise<UserInfoResponse>((resolve, reject) => {
-      fastify.userGrpc.findUserByEmailOrUsername({ usernameOrEmail }, (error, response) => {
+      fastify.userGrpc.findUserByEmailOrUsername({ usernameOrEmail }, metadata, (error, response) => {
         if (error) {
           reject(error);
         }
