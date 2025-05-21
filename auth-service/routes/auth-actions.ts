@@ -33,18 +33,25 @@ export default async function (fastify: FastifyInstance) {
 
     const metadata = createMeta4ServiceRequest(fastify);
     const user = await new Promise<UserInfoResponse>((resolve, reject) => {
+      console.debug(`Request to user-service (${usernameOrEmail})`);
       fastify.userGrpc.findUserByEmailOrUsername({ usernameOrEmail }, metadata, (error, response) => {
         if (error) {
+          console.debug(`Response from user-service: error (${usernameOrEmail}, ${error})`);
           reject(error);
+        } else {
+          console.debug(`Response from user-service: success (${usernameOrEmail})`);
+          resolve(response);
         }
-        resolve(response);
       });
     });
 
     const passwordValid = await bcrypt.compare(password, user.password);
     if (!passwordValid) {
+      console.info(`Invalid password for ${usernameOrEmail}`);
       throw createUnauthorizedError('Invalid credential');
     }
+
+    console.info(`Success auth for ${usernameOrEmail}`);
 
     setJwtCookies(fastify, reply, user, 'both');
 
@@ -54,7 +61,7 @@ export default async function (fastify: FastifyInstance) {
     });
   });
 
-  fastify.post('/logout', async (request, reply) => {
+  fastify.post('/logout', async (_request, reply) => {
     // const { access_token: accessToken, refresh_token: refreshToken } = request.cookies;
     // const authHeader = request.headers.authorization;
     // await fastify.redis.set(`blacklist:${token}`, 'true', 'EX', Number(process.env.JWT_EXPIRES_IN));

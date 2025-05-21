@@ -12,22 +12,32 @@ export default async function (fastify: FastifyInstance) {
 
     const info = fastify.jwt.getTokenInfo(token);
     if (info.type !== TokenType.REFRESH || !info.hasPayload) {
+      console.info(`Wrong token: ${info.type !== TokenType.REFRESH ?
+        `wrong type (${info.type})`
+        : 'payload not provided'}`);
       throw createBadRequiestError("Wrong token");
     }
     if (info.expired) {
+      console.info(`Expired token for ${info.id}`);
       throw createBadRequiestError("Expired token");
     }
 
     const metadata = createMeta4ServiceRequest(fastify);
 
     const user = await new Promise<UserInfoResponse>((resolve, reject) => {
+      console.debug(`Request to user-service (${info.id})`);
       fastify.userGrpc.findUserById({ id: info.id }, metadata, (error, response) => {
         if (error) {
+          console.debug(`Response from user-service: error (${info.id}, ${error})`);
           reject(error);
+        } else {
+          console.debug(`Response from user-service: success (${info.id})`);
+          resolve(response);
         }
-        resolve(response);
       });
     });
+
+    console.info(`Success refresh token for ${info.id}`);
 
     setJwtCookies(fastify, reply, user, 'access');
 

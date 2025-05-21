@@ -138,6 +138,8 @@ export class JwtService {
       opts.subject = user.id;
     }
 
+    console.debug(`Sign jwt: ${user}`);
+
     return jwt.sign(payload, this._secretKey, opts);
   }
 
@@ -153,6 +155,7 @@ export class JwtService {
     try {
       info = jwt.verify(token, this._publicKey);
     } catch (error) {
+      console.debug(`Invalid token: ${error}, ${token}`);
       if (!(error instanceof TokenExpiredError)) {
         throw error;
       }
