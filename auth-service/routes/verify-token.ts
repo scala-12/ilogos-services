@@ -1,7 +1,6 @@
 import { UserInfoResponse } from '@/generated/user';
-import { TokenType } from '@/plugins/jwt';
 import { createBadRequiestError, createUnauthorizedError } from '@/utils/exceptions';
-import { createMeta4ServiceRequest } from '@/utils/jwt-utils';
+import { createMeta4ServiceRequest, TokenType } from '@/utils/jwt-utils';
 import { FastifyInstance } from 'fastify';
 
 export default async function (fastify: FastifyInstance) {

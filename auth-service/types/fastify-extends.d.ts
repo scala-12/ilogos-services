@@ -1,5 +1,5 @@
 import { UserServiceClient } from '@/generated/user';
-import { JwtService } from '@/plugins/jwt';
+import { JwtService } from '@/utils/jwt-utils';
 
 declare module 'fastify' {
   interface FastifyInstance {
