@@ -1,5 +1,5 @@
 import { UserInfoResponse } from '@/generated/user';
-import { isLocalServer, prepareString } from '@/utils';
+import { prepareString, setJwtCookies } from '@/utils';
 import { createUnauthorizedError } from '@/utils/exceptions';
 import { Static, Type } from '@sinclair/typebox';
 import bcrypt from 'bcrypt';
@@ -44,24 +44,7 @@ export default async function (fastify: FastifyInstance) {
       throw createUnauthorizedError('Invalid credential');
     }
 
-    const accessToken = fastify.jwt.sign(true, user);
-    const refreshToken = fastify.jwt.sign(false, user);
-    const isLocal = isLocalServer();
-
-    reply.setCookie('access_token', accessToken, {
-      path: '/',
-      httpOnly: true,       // недоступна из JS (безопасность)
-      secure: !isLocal,     // Включить в production (https)
-      sameSite: 'strict',   // Защита от CSRF
-      maxAge: fastify.jwt.accessExpires
-    });
-    reply.setCookie('refresh_token', refreshToken, {
-      path: '/api/auth/refresh',
-      httpOnly: true,       // недоступна из JS (безопасность)
-      secure: !isLocal,     // только по HTTPS
-      sameSite: 'strict',   // Защита от CSRF
-      maxAge: fastify.jwt.refreshExpires
-    });
+    setJwtCookies(fastify, reply, user, 'both');
 
     return reply.send({
       data: { success: true },
