@@ -122,14 +122,6 @@ export class JwtService {
 
     return { type: TokenType.UNDEFINED };
   }
-
-  // const verifyJwt = (token: string): JwtPayload | null => {
-  //   try {
-  //     return jwt.verify(token, JWT_SECRET) as JwtPayload;
-  //   } catch (err) {
-  //     return null;
-  //   }
-  // }
 }
 
 export default fp(async function (fastify) {

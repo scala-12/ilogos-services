@@ -52,7 +52,6 @@ export const setJwtCookies = (
   tokens: 'both' | 'access' | 'refresh'
 ) => _setJwtCookies(reply, { user, fastify }, tokens);
 
-
 export const clearJwtCookies = (
   reply: FastifyReply,
   tokens: 'both' | 'access' | 'refresh'
