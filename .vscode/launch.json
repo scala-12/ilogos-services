@@ -1,24 +1,24 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "java",
-            "name": "Auth-service",
-            "request": "launch",
-            "mainClass": "com.ilogos.auth.AuthServiceApplication",
-            "projectName": "auth-service",
-            "vmArgs": "-Dspring.profiles.active=local,tmp"
-        },
-        {
-            "type": "kotlin",
-            "request": "launch",
-            "name": "Course-service",
-            "projectRoot": "${workspaceFolder}/course-service",
-            "mainClass": "com.ilogos.courseManager.CourseManagerServiceApplicationKt",
-            "vmArgs": "-Dspring.profiles.active=local,tmp"
-        }
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "User-service",
+      "request": "launch",
+      "mainClass": "com.ilogos.user.UserServiceApplication",
+      "projectName": "user-service",
+      "vmArgs": "-Dspring.profiles.active=local,tmp"
+    },
+    {
+      "type": "kotlin",
+      "request": "launch",
+      "name": "Course-service",
+      "projectRoot": "${workspaceFolder}/course-service",
+      "mainClass": "com.ilogos.courseManager.CourseManagerServiceApplicationKt",
+      "vmArgs": "-Dspring.profiles.active=local,tmp"
+    }
+  ]
 }
