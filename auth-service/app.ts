@@ -12,7 +12,9 @@ dotenv.config({ path: path.resolve(process.cwd(), `.env.${process.env.NODE_ENV}`
 // config with temp overrides
 dotenv.config({ path: path.resolve(process.cwd(), `.env.tmp`) });
 
-const server = fastify()
+const server = fastify({
+  bodyLimit: 4 * 1024,
+});
 
 server.register(autoLoad, {
   dir: path.join(__dirname, 'plugins')
