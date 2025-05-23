@@ -1,1 +1,1 @@
-rootProject.name = "ilogos-common"
+rootProject.name = "shared"
