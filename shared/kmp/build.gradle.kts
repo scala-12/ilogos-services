@@ -1,9 +1,9 @@
 plugins {
     kotlin("multiplatform") version "1.9.23"
-    `maven-publish`
+    id("maven-publish")
 }
 
-group = "com.ilogos"
+group = "com.ilogos.shared"
 version = "0.0.1"
 val artifact = "shared"
 
@@ -43,13 +43,6 @@ kotlin {
 }
 
 publishing {
-    publications {
-        publications.withType<MavenPublication>().configureEach {
-            groupId = "$group"
-            artifactId = artifact
-            version = "$version"
-        }
-    }
     repositories {
         mavenLocal()
     }

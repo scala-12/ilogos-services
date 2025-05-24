@@ -1,1 +1,1 @@
-rootProject.name = "shared"
+rootProject.name = "shared-lib"
