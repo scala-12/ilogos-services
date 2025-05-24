@@ -5,7 +5,6 @@ plugins {
 
 group = "com.ilogos.shared"
 version = "0.0.1"
-val artifact = "shared"
 
 val jjwtVersion = "0.11.5"
 val jsJwtVersion = "9.0.2"

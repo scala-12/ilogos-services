@@ -2,25 +2,27 @@
 
 package com.ilogos.shared.utils
 
-import jsonwebtoken.JwtDecoded
-import jsonwebtoken.jwt
-import kotlinx.datetime.*
 import com.ilogos.shared.model.TokenInfo
+import jsonwebtoken.JwtDecoded
+import jsonwebtoken.PublicKey
+import jsonwebtoken.jwt
 
-actual object TokenInfoFactory {
-    actual fun from(token: String, publicKey: Any): TokenInfo {
-        val key = publicKey as jsonwebtoken.PublicKey
+actual object TokenInfoUtils {
+    actual fun createInfo(token: String, publicKey: Any): TokenInfo {
+        val key = publicKey as PublicKey
         val info = jwt.verify(token, key) as? JwtDecoded
             ?: throw RuntimeException("Invalid jwt token")
 
         return TokenInfo(
             token = token,
-            expiration = Instant.fromEpochMilliseconds(info.exp * 1_000L),
+            expiration = info.exp * 1_000L,
             username = info.username,
             subject = info.sub,
             email = info.email,
-            issuedAt = Instant.fromEpochMilliseconds(info.issuedAt * 1_000L),
+            issuedAt = info.issuedAt * 1_000L,
             type = info.type
         )
     }
+
+    fun createInfo(token: String, publicKey: PublicKey) = createInfo(token, publicKey as Any)
 }

@@ -1,14 +1,15 @@
 package com.ilogos.shared.model
 
-import kotlinx.datetime.*
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 
 data class TokenInfo(
     val token: String,
-    val expiration: Instant?,
+    val expiration: Long?,
     val username: String?,
     val subject: String,
     val email: String?,
-    val issuedAt: Instant?,
+    val issuedAt: Long?,
     val type: String?
 ) {
 
@@ -24,7 +25,7 @@ data class TokenInfo(
         fun isRefreshType(type: String?): Boolean = type == REFRESH_TYPE
     }
 
-    val isExpired: Boolean get() = expiration == null || expiration < Clock.System.now()
+    val isExpired: Boolean get() = expiration == null || Instant.fromEpochMilliseconds(expiration) < Clock.System.now()
     val isAccessToken: Boolean get() = isAccessType(type)
     val isRefreshToken: Boolean get() = isRefreshType(type)
     val hasPayload: Boolean get() = !username.isNullOrEmpty() && !email.isNullOrEmpty() && !type.isNullOrEmpty()
