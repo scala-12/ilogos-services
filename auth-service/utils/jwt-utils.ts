@@ -2,10 +2,9 @@ import { UserInfoResponse } from "@/generated/user";
 import { CookieSerializeOptions } from "@fastify/cookie";
 import { Metadata } from "@grpc/grpc-js";
 import { FastifyInstance, FastifyReply } from "fastify";
-import jwt, { PrivateKey, PublicKey, Secret, SignOptions, TokenExpiredError } from 'jsonwebtoken';
+import { PrivateKey, PublicKey, Secret, sign, SignOptions } from 'jsonwebtoken';
 import { isLocalServer } from ".";
-
-const getTokenCookieName = (isAccess: boolean) => isAccess ? 'access_token' : 'refresh_token';
+import { getTokenInfo, TokenInfoCompanion } from "./shared-lib-wrapper";
 
 const getTokenCookieDetails = (isAccess: boolean, secure: boolean, fastify: FastifyInstance | null): CookieSerializeOptions => {
   const path = isAccess ? '/' : '/api/auth/refresh';
@@ -40,7 +39,7 @@ const _setJwtCookies = (
     const cookieDetails = getTokenCookieDetails(isAccess, secure, opts ? opts.fastify : null);
 
     reply.setCookie(
-      getTokenCookieName(isAccess),
+      isAccess ? TokenInfoCompanion.ACCESS_COOKIE_NAME : TokenInfoCompanion.REFRESH_COOKIE_NAME,
       token,
       cookieDetails);
   }
@@ -82,23 +81,6 @@ export enum TokenType {
   UNDEFINED
 }
 
-interface AccessTokenInfo<HasPayload extends boolean> {
-  type: TokenType.ACCESS;
-  expired: boolean;
-  id: HasPayload extends true ? string : undefined | string;
-  email: HasPayload extends true ? string : undefined | string;
-  username: HasPayload extends true ? string : undefined | string;
-  roles: HasPayload extends true ? string[] : undefined | string[];
-  hasPayload: HasPayload;
-}
-
-interface RefreshTokenInfo<HasPayload extends boolean> {
-  type: TokenType.REFRESH;
-  id: HasPayload extends true ? string : undefined | string;
-  expired: boolean;
-  hasPayload: HasPayload;
-}
-
 export class JwtService {
   private _secretKey: Secret | PrivateKey;
   private _publicKey: PublicKey;
@@ -138,53 +120,10 @@ export class JwtService {
       opts.subject = user.id;
     }
 
-    console.debug(`Sign jwt: ${user}`);
+    console.debug(`Sign jwt: ${opts.subject}`);
 
-    return jwt.sign(payload, this._secretKey, opts);
+    return sign(payload, this._secretKey, opts);
   }
 
-  getTokenInfo = (token: string): (
-    { type: TokenType.UNDEFINED; expired?: boolean }
-    | RefreshTokenInfo<false>
-    | RefreshTokenInfo<true>
-    | AccessTokenInfo<false>
-    | AccessTokenInfo<true>
-  ) => {
-    let info;
-    let isExpired = false;
-    try {
-      info = jwt.verify(token, this._publicKey);
-    } catch (error) {
-      console.debug(`Invalid token: ${error}, ${token}`);
-      if (!(error instanceof TokenExpiredError)) {
-        throw error;
-      }
-      info = jwt.decode(token);
-      isExpired = true;
-    }
-
-    if (info && typeof info !== 'string') {
-      const expired = isExpired || info.exp == null || new Date(info.exp * 1_000) <= new Date();
-      const id = info.sub || '';
-      switch (info.type) {
-        case 'access':
-          const { username, email, roles } = info;
-          return {
-            expired, id, username, email, roles,
-            type: TokenType.ACCESS,
-            hasPayload: Boolean(id && username && email && roles)
-          };
-        case 'refresh':
-          return {
-            expired, id,
-            type: TokenType.REFRESH,
-            hasPayload: Boolean(id)
-          };
-        default:
-          return { type: TokenType.UNDEFINED, expired };
-      }
-    }
-
-    return { type: TokenType.UNDEFINED };
-  }
+  getTokenInfo = (token: string) => getTokenInfo(token, this._publicKey);
 }

@@ -1,6 +1,6 @@
 import { UserInfoResponse } from '@/generated/user';
 import { createBadRequiestError, createUnauthorizedError } from '@/utils/exceptions';
-import { createMeta4ServiceRequest, TokenType } from '@/utils/jwt-utils';
+import { createMeta4ServiceRequest } from '@/utils/jwt-utils';
 import { FastifyInstance } from 'fastify';
 
 export default async function (fastify: FastifyInstance) {
@@ -10,46 +10,47 @@ export default async function (fastify: FastifyInstance) {
       throw createBadRequiestError("Access token not setted");
     }
 
-    const info = fastify.jwt.getTokenInfo(token);
-    if (info.type !== TokenType.ACCESS || !info.hasPayload) {
-      console.info(`Wrong token: ${info.type !== TokenType.ACCESS ?
+    let info;
+    try {
+      info = fastify.jwt.getTokenInfo(token)
+    } catch (err) {
+      console.error("JWT token invalid");
+      throw err;
+    }
+    if (!info.isAccessToken || !info.hasPayload) {
+      console.info(`Wrong token: ${!info.isAccessToken ?
         `wrong type (${info.type})`
         : 'payload not provided'}`);
       throw createUnauthorizedError("Wrong token");
     }
-    if (info.expired) {
-      console.info(`Expired token for ${info.id}`);
+    if (info.isExpired) {
+      console.info(`Expired token for ${info.subject}`);
       throw createUnauthorizedError("Expired token");
     }
 
     const metadata = createMeta4ServiceRequest(fastify);
 
     const user = await new Promise<UserInfoResponse>((resolve, reject) => {
-      console.debug(`Request to user-service (${info.id})`);
-      fastify.userGrpc.findUserById({ id: info.id }, metadata, (error, response) => {
+      console.debug(`Request to user-service (${info.subject})`);
+      fastify.userGrpc.findUserById({ id: info.subject }, metadata, (error, response) => {
         if (error) {
-          console.debug(`Response from user-service: error (${info.id}, ${error})`);
+          console.debug(`Response from user-service: error (${info.subject}, ${error})`);
           reject(error);
         } else {
-          console.debug(`Response from user-service: success (${info.id})`);
+          console.debug(`Response from user-service: success (${info.subject})`);
           resolve(response);
         }
       });
     });
 
-    if (user.email === info.email && user.username === info.username) {
-      const userRoles = new Set(user.roles);
-      if (new Set(info.roles).size === userRoles.size && info.roles.every(e => userRoles.has(e))) {
-        console.info(`Success access token for ${info.id} (${info.username})`);
-        return reply.send({
-          data: { success: true },
-          message: 'Access token verified',
-        });
-      } else {
-        console.info(`Invalid token: roles (${info.id}, ${info.username})`);
-      }
+    if (info.checkUserData(user.username, user.email, user.roles)) {
+      console.info(`Success access token for ${info.subject} (${info.username})`);
+      return reply.send({
+        data: { success: true },
+        message: 'Access token verified',
+      });
     } else {
-      console.info(`Invalid token: username/email (${info.id}, ${info.username}/${info.email} != ${user.username}/${user.email})`);
+      console.info(`Invalid token: username/email/roles (${info.subject}, ${info.username}/${info.email}/${info.roles} != ${user.username}/${user.email}/${user.roles})`);
     }
 
     throw createUnauthorizedError("Token invalid");

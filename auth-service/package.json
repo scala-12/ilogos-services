@@ -28,7 +28,8 @@
     "fastify": "^5.0.0",
     "fastify-cli": "^7.4.0",
     "fastify-plugin": "^5.0.0",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "shared-lib": "file:../shared/kmp-library/build/js/packages/shared-lib"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.1",

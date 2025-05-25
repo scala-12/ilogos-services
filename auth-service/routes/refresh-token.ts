@@ -1,6 +1,6 @@
 import { UserInfoResponse } from '@/generated/user';
 import { createBadRequiestError } from '@/utils/exceptions';
-import { createMeta4ServiceRequest, setJwtCookies, TokenType } from '@/utils/jwt-utils';
+import { createMeta4ServiceRequest, setJwtCookies } from '@/utils/jwt-utils';
 import { FastifyInstance } from 'fastify';
 
 export default async function (fastify: FastifyInstance) {
@@ -10,34 +10,41 @@ export default async function (fastify: FastifyInstance) {
       throw createBadRequiestError("Refresh token not setted");
     }
 
-    const info = fastify.jwt.getTokenInfo(token);
-    if (info.type !== TokenType.REFRESH || !info.hasPayload) {
-      console.info(`Wrong token: ${info.type !== TokenType.REFRESH ?
+    let info;
+    try {
+      info = fastify.jwt.getTokenInfo(token)
+    } catch (err) {
+      console.error("JWT token invalid");
+      throw err;
+    }
+
+    if (!info.isRefreshToken || !info.hasPayload) {
+      console.info(`Wrong token: ${!info.isRefreshToken ?
         `wrong type (${info.type})`
         : 'payload not provided'}`);
       throw createBadRequiestError("Wrong token");
     }
-    if (info.expired) {
-      console.info(`Expired token for ${info.id}`);
+    if (info.isExpired) {
+      console.info(`Expired token for ${info.subject}`);
       throw createBadRequiestError("Expired token");
     }
 
     const metadata = createMeta4ServiceRequest(fastify);
 
     const user = await new Promise<UserInfoResponse>((resolve, reject) => {
-      console.debug(`Request to user-service (${info.id})`);
-      fastify.userGrpc.findUserById({ id: info.id }, metadata, (error, response) => {
+      console.debug(`Request to user-service (${info.subject})`);
+      fastify.userGrpc.findUserById({ id: info.subject }, metadata, (error, response) => {
         if (error) {
-          console.debug(`Response from user-service: error (${info.id}, ${error})`);
+          console.debug(`Response from user-service: error (${info.subject}, ${error})`);
           reject(error);
         } else {
-          console.debug(`Response from user-service: success (${info.id})`);
+          console.debug(`Response from user-service: success (${info.subject})`);
           resolve(response);
         }
       });
     });
 
-    console.info(`Success refresh token for ${info.id}`);
+    console.info(`Success refresh token for ${info.subject}`);
 
     setJwtCookies(fastify, reply, user, 'access');
 
