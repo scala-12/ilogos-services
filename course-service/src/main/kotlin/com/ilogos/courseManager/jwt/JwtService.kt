@@ -1,16 +1,13 @@
 package com.ilogos.courseManager.jwt
 
-import com.ilogos.courseManager.common.TokenInfo
 import com.ilogos.courseManager.exception.ExceptionWithStatus
+import com.ilogos.shared.model.TokenInfo
+import com.ilogos.shared.utils.TokenInfoUtils
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
-import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator
-import org.springframework.security.oauth2.jwt.Jwt
-import org.springframework.security.oauth2.jwt.JwtClaimValidator
 import org.springframework.security.oauth2.jwt.JwtDecoder
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.stereotype.Service
 import java.io.IOException
 import java.nio.file.Files
@@ -19,6 +16,7 @@ import java.security.KeyFactory
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.X509EncodedKeySpec
 import java.util.*
+import java.util.function.Consumer
 
 
 @Service
@@ -67,7 +65,7 @@ class JwtService(private val _jwtConfig: JwtConfig?) {
         }
     }
 
-    fun getTokenInfo(token: String): TokenInfo = TokenInfo(token, publicKey)
+    fun getTokenInfo(token: String): TokenInfo = TokenInfoUtils.createInfo(token, publicKey)
 
     fun extractTokenInfoFromHeader(header: String): TokenInfo {
         val token = if (header.startsWith("Bearer ")) header.removePrefix("Bearer ").trim() else ""
@@ -76,39 +74,11 @@ class JwtService(private val _jwtConfig: JwtConfig?) {
             throw ExceptionWithStatus(HttpStatus.UNAUTHORIZED, "Bearer token not set")
         }
 
-        return TokenInfo(token, publicKey)
+        return TokenInfoUtils.createInfo(token, publicKey)
     }
 
     fun buildJwtDecoder(): JwtDecoder {
-        val decoder = NimbusJwtDecoder.withPublicKey(publicKey).build()
-
-        val tokenTypeValidator = JwtClaimValidator<String?>(TokenInfo.TYPE_CLAIM) {
-            if (!TokenInfo.isAccessType(it)) {
-                log.info("Attempt to gain access via refresh token")
-                false
-            } else true
-        }
-
-        val tokenUsernameValidator = JwtClaimValidator<String?>(TokenInfo.USERNAME_CLAIM) {
-            if (it.isNullOrBlank()) {
-                log.info("Attempt to gain access via token without username ($it)")
-                false
-            } else true
-        }
-
-        val tokenEmailValidator = JwtClaimValidator<String?>(TokenInfo.EMAIL_CLAIM) {
-            if (it?.contains("@") != true) {
-                log.info("Attempt to gain access via token with incorrect email ($it)")
-                false
-            } else true
-        }
-
-        val validator = DelegatingOAuth2TokenValidator<Jwt>(
-            tokenTypeValidator, tokenUsernameValidator, tokenEmailValidator
-        )
-
-        decoder.setJwtValidator(validator)
-
-        return decoder
+        val logger: Consumer<String> = Consumer { msg: String -> log.info(msg) }
+        return TokenInfoUtils.buildJwtDecoder(publicKey, logger)
     }
 }

@@ -13,7 +13,7 @@ import org.hibernate.annotations.Type;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.ilogos.user.common.TokenInfo;
+import com.ilogos.shared.model.TokenInfo;
 import com.ilogos.user.common.hibernate.CitextType;
 import com.ilogos.user.common.model.IWithEmailHistory;
 import com.ilogos.user.common.model.IWithPassword;
@@ -328,7 +328,7 @@ public class User implements IUserBase,
         if (isLogin) {
             changedFields.add(Field.LOGGED_TIME);
         }
-        lastTokenIssuedAt = info.getIssuedAt().toInstant();
+        lastTokenIssuedAt = Instant.ofEpochMilli(info.getIssuedAt());
     }
 
     public boolean hasChangedUsername() {

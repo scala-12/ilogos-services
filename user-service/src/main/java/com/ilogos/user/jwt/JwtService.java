@@ -8,17 +8,14 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
-import org.springframework.security.oauth2.core.OAuth2TokenValidator;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtClaimValidator;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Service;
 
-import com.ilogos.user.common.TokenInfo;
+import com.ilogos.shared.model.TokenInfo;
+import com.ilogos.shared.utils.TokenInfoUtils;
 import com.ilogos.user.exception.ExceptionWithStatus;
 
 import jakarta.annotation.PostConstruct;
@@ -61,7 +58,7 @@ public class JwtService {
     }
 
     public TokenInfo getTokenInfo(String token) {
-        return new TokenInfo(token, publicKey);
+        return TokenInfoUtils.INSTANCE.createInfo(token, publicKey);
     }
 
     public TokenInfo extractTokenInfoFromHeader(String header) {
@@ -72,47 +69,12 @@ public class JwtService {
             log.info("Bearer token not setted");
             throw new ExceptionWithStatus(HttpStatus.UNAUTHORIZED, "Bearer token not setted");
         }
-        return new TokenInfo(token.get(), publicKey);
+        return TokenInfoUtils.INSTANCE.createInfo(token.get(), publicKey);
     }
 
     public JwtDecoder buildJwtDecoder() {
-        var decoder = NimbusJwtDecoder.withPublicKey(publicKey).build();
-
-        JwtClaimValidator<String> tokenTypeValidator = new JwtClaimValidator<>(TokenInfo.TYPE_CLAIM,
-                it -> {
-                    if (!TokenInfo.isAccessType(it)) {
-                        log.info("Attempt to gain access via refresh token");
-                        return false;
-                    }
-                    return true;
-                });
-
-        JwtClaimValidator<String> tokenUsernameValidator = new JwtClaimValidator<>(TokenInfo.USERNAME_CLAIM,
-                it -> {
-                    if (it == null || it.isBlank()) {
-                        log.info("Attempt to gain access via token without username (%s)".formatted(it));
-                        return false;
-                    }
-                    return true;
-                });
-
-        JwtClaimValidator<String> tokenEmailValidator = new JwtClaimValidator<>(TokenInfo.EMAIL_CLAIM,
-                it -> {
-                    if (it == null || !it.contains("@")) {
-                        log.info("Attempt to gain access via token with incorrect email (%s)".formatted(it));
-                        return false;
-                    }
-                    return true;
-                });
-
-        OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(
-                tokenTypeValidator,
-                tokenUsernameValidator,
-                tokenEmailValidator);
-
-        decoder.setJwtValidator(validator);
-
-        return decoder;
+        Consumer<String> logger = (String msg) -> log.info(msg);
+        return TokenInfoUtils.INSTANCE.buildJwtDecoder(publicKey, logger);
     }
 
 }

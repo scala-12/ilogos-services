@@ -26,6 +26,7 @@ repositories {
 
 dependencies {
     implementation("com.ipoint:core:0.0.1-SNAPSHOT")
+    implementation("com.ilogos.shared:shared-lib:0.0.1")
 
     // Spring Boot Starters
     implementation("org.springframework.boot:spring-boot-starter-web")

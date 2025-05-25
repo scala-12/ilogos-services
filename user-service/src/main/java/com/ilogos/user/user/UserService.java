@@ -3,12 +3,13 @@ package com.ilogos.user.user;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import com.ilogos.user.common.TokenInfo;
+import com.ilogos.shared.model.TokenInfo;
 import com.ilogos.user.exception.ExceptionWithStatus;
 import com.ilogos.user.jwt.JwtService;
 import com.ilogos.user.user.UserController.UpdateUserRequest;
@@ -78,9 +79,9 @@ public class UserService {
     }
 
     public Optional<TokensData> assignRefreshToken(TokenInfo tokenInfo, Function<User, TokensData> generator) {
-        User user = userRepository.findById(tokenInfo.getId())
+        User user = userRepository.findById(UUID.fromString(tokenInfo.getSubject()))
                 .orElseThrow(() -> new ExceptionWithStatus(HttpStatus.UNAUTHORIZED));
-        if (tokenInfo.isRefreshToken() && tokenInfo.isValid(user)) {
+        if (tokenInfo.isRefreshToken() && user.getUsername().equals(tokenInfo.getUsername())) {
             String username = tokenInfo.getUsername();
 
             var tokens = generator.apply(user);
@@ -119,7 +120,8 @@ public class UserService {
     }
 
     public Optional<User> updateSelf(TokenInfo tokenInfo, UpdateUserRequest request) {
-        Optional<User> user = userRepository.findById(tokenInfo.getId());
+        Optional<User> user = userRepository.findById(
+                UUID.fromString(tokenInfo.getSubject()));
         return user.map(e -> {
             request.email().ifPresent(e::setEmail);
             request.password().ifPresent(e::setPassword);

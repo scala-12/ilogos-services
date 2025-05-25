@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ilogos.user.common.TokenInfo;
+import com.ilogos.shared.model.TokenInfo;
 import com.ilogos.user.common.validation.annotation.ValidTimezone;
 import com.ilogos.user.exception.ExceptionWithStatus;
 import com.ilogos.user.jwt.JwtService;
