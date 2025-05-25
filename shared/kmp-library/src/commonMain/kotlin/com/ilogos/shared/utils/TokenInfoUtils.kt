@@ -1,7 +1,7 @@
 package com.ilogos.shared.utils
 
-import com.ilogos.shared.model.TokenInfo
+import com.ilogos.shared.model.AbstractTokenInfo
 
 expect object TokenInfoUtils {
-    fun createInfo(token: String, publicKey: Any): TokenInfo
+    fun createInfo(token: String, publicKey: Any): AbstractTokenInfo
 }

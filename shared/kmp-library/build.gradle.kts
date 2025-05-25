@@ -16,13 +16,15 @@ repositories {
 kotlin {
     jvm()
     js(IR) {
+        moduleName = "shared-lib"
         nodejs()
+        generateTypeScriptDefinitions()
+        binaries.library()
     }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.2")
             }
         }
         val jvmMain by getting {
